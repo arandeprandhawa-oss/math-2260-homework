@@ -46,7 +46,7 @@ iframe{flex:1;width:100%;border:0;background:#fff}
 <iframe id="frame" title="Page content"></iframe>
 <script>
 const SITE = "Math-2260-homework";
-const tabs = [{"label":"Home","slug":"home","file":"pages/00-home.html"},{"label":"Formula sheet","slug":"formula-sheet","file":"pages/01-formula-sheet.html"},{"label":"Assignment 1","slug":"assignment-1","file":"pages/assignment-1.html"},{"label":"Assignment 2","slug":"assignment-2","file":"pages/assignment-2.html"},{"label":"Assignment 3","slug":"assignment-3","file":"pages/assignment-3.html"},{"label":"Assignment 4","slug":"assignment-4","file":"pages/assignment-4.html"},{"label":"Sections 3.1–3.3","slug":"sections-3-1-3-3","file":"pages/sections-3-1-to-3-3.html"}];
+const tabs = [{"label":"Home","slug":"home","file":"pages/00-home.html","v":"0126088e"},{"label":"Formula sheet","slug":"formula-sheet","file":"pages/01-formula-sheet.html","v":"53f9e6af"},{"label":"Assignment 1","slug":"assignment-1","file":"pages/assignment-1.html","v":"929e9a4f"},{"label":"Assignment 2","slug":"assignment-2","file":"pages/assignment-2.html","v":"54ac0441"},{"label":"Assignment 3","slug":"assignment-3","file":"pages/assignment-3.html","v":"9a6663b5"},{"label":"Assignment 4","slug":"assignment-4","file":"pages/assignment-4.html","v":"9a495a9e"},{"label":"Sections 3.1–3.3","slug":"sections-3-1-3-3","file":"pages/sections-3-1-to-3-3.html","v":"b9f38638"}];
 const nav = document.getElementById('tabs');
 const frame = document.getElementById('frame');
 const openLink = document.getElementById('open');
@@ -68,19 +68,45 @@ nav.addEventListener('keydown', e => {
   n.el.focus();
   location.hash = n.slug;
 });
+tabs.forEach(t => { t.path = decodeURIComponent(new URL(t.file, location.href).pathname); });
+function mark(t) {
+  openLink.href = t.file;
+  tabs.forEach(x => { x.el.setAttribute('aria-selected', x === t); x.el.tabIndex = x === t ? 0 : -1; });
+  t.el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  document.title = t.label + ' · ' + SITE;
+}
 function show() {
   const h = decodeURIComponent(location.hash.slice(1));
   const t = tabs.find(x => x.slug === h) || tabs[0];
   if (t !== current) {
-    const url = new URL(t.file, location.href).href;
+    // ?v= changes whenever the page changes, so the browser never shows an old copy
+    const url = new URL(t.file + (t.v ? '?v=' + t.v : ''), location.href).href;
     if (current) frame.contentWindow.location.replace(url); else frame.src = url;
     current = t;
   }
-  openLink.href = t.file;
-  tabs.forEach(x => { x.el.setAttribute('aria-selected', x === t); x.el.tabIndex = x === t ? 0 : -1; });
-  t.el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  document.title = t.label + ' \u00b7 ' + SITE;
+  mark(t);
 }
+// A link inside a page that leads to another tab (an index card, "All lectures")
+// switches tabs instead, so the tab bar follows and the page is always the newest copy.
+frame.addEventListener('load', () => {
+  let doc, here;
+  try { doc = frame.contentDocument; here = decodeURIComponent(frame.contentWindow.location.pathname); } catch (e) { return; }
+  if (!doc) return;
+  const now = tabs.find(x => x.path === here);
+  if (now && now !== current) { current = now; history.replaceState(null, '', '#' + now.slug); mark(now); }
+  doc.addEventListener('click', e => {
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+    let u;
+    try { u = new URL(a.getAttribute('href'), doc.baseURI); } catch (err) { return; }
+    if (u.origin !== location.origin) return;
+    const hit = tabs.find(x => x.path === decodeURIComponent(u.pathname));
+    if (!hit || hit === current) return;
+    e.preventDefault();
+    location.hash = hit.slug;
+  });
+});
 // Slider under the tabs: appears only when the tabs don't all fit
 function syncSlide() {
   const max = nav.scrollWidth - nav.clientWidth;

@@ -1,37 +1,37 @@
 {
-    "title":  "Math-2260-homework",
-    "layout":  "tabs",
-    "zoom":  80,
-    "index":  "pages/00-home.html",
-    "url":  "https://arandeprandhawa-oss.github.io/math-2260-homework/",
-    "tabs":  [
-                 {
-                     "label":  "Home",
-                     "file":  "pages/00-home.html"
-                 },
-                 {
-                     "label":  "Formula sheet",
-                     "file":  "pages/01-formula-sheet.html"
-                 },
-                 {
-                     "label":  "Assignment 1",
-                     "file":  "pages/assignment-1.html"
-                 },
-                 {
-                     "label":  "Assignment 2",
-                     "file":  "pages/assignment-2.html"
-                 },
-                 {
-                     "label":  "Assignment 3",
-                     "file":  "pages/assignment-3.html"
-                 },
-                 {
-                     "label":  "Assignment 4",
-                     "file":  "pages/assignment-4.html"
-                 },
-                 {
-                     "label":  "Sections 3.1–3.3",
-                     "file":  "pages/sections-3-1-to-3-3.html"
-                 }
-             ]
+    "title": "Math-2260-homework",
+    "layout": "tabs",
+    "zoom": 80,
+    "index": "pages/00-home.html",
+    "url": "https://arandeprandhawa-oss.github.io/math-2260-homework/",
+    "tabs": [
+        {
+            "label": "Home",
+            "file": "pages/00-home.html"
+        },
+        {
+            "label": "Formula sheet",
+            "file": "pages/01-formula-sheet.html"
+        },
+        {
+            "label": "Assignment 1",
+            "file": "pages/assignment-1.html"
+        },
+        {
+            "label": "Assignment 2",
+            "file": "pages/assignment-2.html"
+        },
+        {
+            "label": "Assignment 3",
+            "file": "pages/assignment-3.html"
+        },
+        {
+            "label": "Assignment 4",
+            "file": "pages/assignment-4.html"
+        },
+        {
+            "label": "Sections 3.1–3.3",
+            "file": "pages/sections-3-1-to-3-3.html"
+        }
+    ]
 }
