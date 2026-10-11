@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assignment 5</title>
+<!-- The home page builds this page's card from the block below. -->
+<script type="application/json" id="site-card">
+{"num": "A5", "title": "Assignment 5 practice", "text": "Expected value from a pmf, the expected value of a function, the shortcut formula for the variance, linear functions aX + b, the Bernoulli variance, an insurance premium, and E[X(X − 1)].", "meta": ["§3.3", "6 questions", "New numbers every time"]}
+</script>
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<link rel="stylesheet" href="practice.css">
+<style>
+/* Small spike plots of a pmf, drawn in the worked solutions. Colours come from site.css. */
+.pr-sol .spikes{display:flex;flex-wrap:wrap;gap:4px 22px;margin:10px 0 12px}
+.pr-sol .spikes figure{margin:0;flex:1 1 260px;max-width:340px}
+.pr-sol .spikes figcaption,.pr-sol .figcap{font-size:.86rem;color:var(--muted);margin:2px 0 10px;max-width:68ch}
+.pr-sol .spikes svg text{font-family:var(--mono)}
+.pr-sol table{border-collapse:collapse;font-family:var(--mono);font-size:.9rem;font-variant-numeric:tabular-nums}
+.pr-sol th,.pr-sol td{padding:5px 12px;text-align:right;border-bottom:1px solid var(--line)}
+.pr-sol th{font-family:var(--sans);font-weight:500;color:var(--muted);font-size:.84rem;text-align:left}
+</style>
+<style id="site-zoom">@media (min-width:900px){html{zoom:0.8}}</style></head>
+<body>
+<script src="practice.js"></script>
+<script>
+"use strict";
+const {R, ri, pick, shuffle, fx, tr, frac, part, table, sum, scaleInt} = Practice;
+const h2 = v => (v / 100).toFixed(2);                 // hundredths -> "0.25"
+const t1 = v => (v / 10).toFixed(1);                  // tenths     -> "0.3"
+const money = x => "$" + Number(x).toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 2});
+const big = x => Number(x).toLocaleString("en-US");   // 10000 -> "10,000"
+const exam = t => `<p class="exam"><b>On a test:</b> ${t}</p>`;
+
+/* Spike plot of a pmf with the mean marked as the balance point.
+   xs, ps: values and probabilities. ps are shown as given (strings).                   */
+function spikes(xs, pnum, plab, mu, name, muLabel) {
+  const W = 320, H = 160, L = 22, Rt = 22, T = 22, B = 44;
+  let lo = Math.min(...xs), hi = Math.max(...xs);
+  const pad = (hi - lo) * 0.12 || 1; lo -= pad; hi += pad;
+  const sx = x => L + (x - lo) / (hi - lo) * (W - L - Rt);
+  const pmax = Math.max(...pnum), base = H - B, sy = p => base - p / pmax * (base - T);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Spike plot of the pmf of ${name}, mean ${muLabel}">`;
+  s += `<line x1="${L - 6}" x2="${W - Rt + 6}" y1="${base}" y2="${base}" style="stroke:var(--muted);stroke-width:1"/>`;
+  xs.forEach((x, i) => {
+    const X = sx(x).toFixed(1), Y = sy(pnum[i]).toFixed(1);
+    s += `<line x1="${X}" x2="${X}" y1="${base}" y2="${Y}" style="stroke:var(--accent);stroke-width:3"/>`;
+    s += `<circle cx="${X}" cy="${Y}" r="3.2" style="fill:var(--accent)"/>`;
+    s += `<text x="${X}" y="${(+Y - 7).toFixed(1)}" text-anchor="middle" font-size="10.5" style="fill:var(--ink)">${plab[i]}</text>`;
+    s += `<text x="${X}" y="${base + 21}" text-anchor="middle" font-size="11" style="fill:var(--muted)">${big(x)}</text>`;
+  });
+  const M = sx(mu).toFixed(1);
+  s += `<path d="M${M} ${base} l-6 9 h12 z" style="fill:var(--flag)"/>`;
+  s += `<text x="${M}" y="${H - 4}" text-anchor="middle" font-size="11" font-weight="500" style="fill:var(--flag)">mean ${muLabel}</text>`;
+  return s + "</svg>";
+}
+
+const QUESTIONS = [
+
+/* 1 */{title: "Expected value of a function: a surcharge", ref: "Devore §3.3, Exercise 30, p. 116",
+  orig: {pr: [55, 25, 15, 5], k: 120},
+  gen() {
+    const w = [1, 0.35 + Math.random() * 0.3, 0.15 + Math.random() * 0.25, 0.03 + Math.random() * 0.1];
+    return {pr: scaleInt(w, 100, 2), k: pick([80, 90, 100, 110, 120, 150, 200])};
+  },
+  build(p, c) {
+    const ys = [0, 1, 2, 3], pr = p.pr.map(q => q / 100);
+    const EY = sum(ys.map((y, i) => y * pr[i])), EY2 = sum(ys.map((y, i) => y * y * pr[i])), ES = p.k * EY2;
+    const html = `<p>An individual who has automobile insurance from a certain company is randomly selected. Let \\(Y\\) be the number of moving violations for which the individual was cited during the last 3 years. The pmf of \\(Y\\) is the following.</p>
+      ${table(null, [["\\(y\\)", ...ys], ["\\(p(y)\\)", ...p.pr.map(h2)]])}
+      ${part("a", `<p>Compute \\(E(Y)\\).</p><div class="row">\\(E(Y)\\) = ${c.num(EY, 2)}</div>`)}
+      ${part("b", `<p>Suppose an individual with \\(Y\\) violations incurs a surcharge of \\(\\$${p.k}Y^2\\). Calculate the expected amount of the surcharge.</p><div class="row">$ ${c.num(ES, 2)}</div>`)}`;
+    const sol = R`<p><b>(a)</b> The expected value is the weighted average of the possible values (p. 110).</p>
+      $$E(Y)=\sum_{D} y\cdot p(y)=${ys.map((y, i) => `(${y})(${h2(p.pr[i])})`).join("+")}=${tr(EY)}$$
+      <div class="spikes"><figure>${spikes(ys, pr, p.pr.map(h2), EY, "Y", "= " + tr(EY))}</figure></div>
+      <p class="figcap">Added picture. Each spike is \(p(y)\). The mean is where the spikes would balance on a seesaw, so it does not have to be a possible value of \(Y\).</p>
+      <p><b>(b)</b> The surcharge is the function \(h(Y)=${p.k}Y^2\). Use \(E[h(Y)]=\sum h(y)\,p(y)\) (p. 112). The constant ${p.k} comes out of the sum, so you only need \(E(Y^2)\).</p>
+      $$E(Y^2)=\sum_{D} y^2\cdot p(y)=${ys.map((y, i) => `(${y * y})(${h2(p.pr[i])})`).join("+")}=${tr(EY2)}$$
+      $$E(${p.k}Y^2)=${p.k}\,E(Y^2)=${p.k}(${tr(EY2)})=${tr(ES)}$$
+      <p>The expected surcharge is <span class="ans">${money(+ES.toFixed(2))}</span>. Notice that \(${p.k}[E(Y)]^2=${p.k}(${tr(EY)})^2=${tr(p.k * EY * EY)}\) is a different (wrong) number: for a function that is not linear, \(E[h(Y)]\ne h(E(Y))\).</p>` +
+      exam("a pmf table, then “find \\(E(X)\\)” and “find the expected value of \\(h(X)\\)” for some cost or penalty. Write \\(E[h(X)]=\\sum h(x)\\,p(x)\\) before substituting, and square the values, not the probabilities.");
+    return {html, sol};
+  }},
+
+/* 2 */{title: "Freezer capacity: E(X), V(X) and linear functions", ref: "Devore §3.3, Exercise 32, p. 116",
+  orig: {vals: [16, 18, 20], pr: [1, 3, 6], a: 64, b: 650, k: 9},
+  gen() {
+    const vals = pick([[16, 18, 20], [14, 17, 20], [12, 15, 18], [10, 14, 18], [15, 18, 21]]), a = pick([56, 60, 64, 70, 75, 80]);
+    const x = ri(1, 7), y = ri(1, 9 - x);
+    const pr = shuffle([x, y, 10 - x - y]);
+    return {vals, pr, a, b: 50 * ri(6, Math.min(16, Math.floor((a * vals[0] - 100) / 50))), k: pick([5, 6, 8, 9, 10])};
+  },
+  build(p, c) {
+    const v = p.vals, pr = p.pr.map(q => q / 10), kk = p.k / 1000;
+    const EX = sum(v.map((x, i) => x * pr[i])), EX2 = sum(v.map((x, i) => x * x * pr[i])), V = EX2 - EX * EX;
+    const EP = p.a * EX - p.b, VP = p.a * p.a * V, EH = EX - kk * EX2;
+    const html = `<p>A certain brand of upright freezer is available in three different rated capacities: ${v[0]} ft³, ${v[1]} ft³, and ${v[2]} ft³. Let \\(X\\) be the rated capacity of a freezer of this brand sold at a certain store. Suppose that \\(X\\) has the following pmf.</p>
+      ${table(null, [["\\(x\\)", ...v], ["\\(p(x)\\)", ...p.pr.map(t1)]])}
+      ${part("a", `<p>Compute \\(E(X)\\) (in ft³), \\(E(X^2)\\), and \\(V(X)\\).</p><div class="row">\\(E(X)\\) = ${c.num(EX, {dp: 2, unit: "ft³"})}</div><div class="row">\\(E(X^2)\\) = ${c.num(EX2, 2)}</div><div class="row">\\(V(X)\\) = ${c.num(V, 2)}</div>`)}
+      ${part("b", `<p>If the price of a freezer having capacity \\(X\\) is \\(${p.a}X-${p.b}\\), what is the expected price paid by the next customer to buy a freezer?</p><div class="row">$ ${c.num(EP, 2)}</div>`)}
+      ${part("c", `<p>What is the variance of the price paid by the next customer?</p><div class="row">${c.num(VP, 2)}</div>`)}
+      ${part("d", `<p>Suppose that although the rated capacity of a freezer is \\(X\\), the actual capacity is \\(h(X)=X-${tr(kk)}X^2\\). What is the expected actual capacity of the freezer purchased by the next customer? (Four decimal places.)</p><div class="row">${c.num(EH, {dp: 4, unit: "ft³"})}</div>`)}`;
+    const sol = R`<p><b>(a)</b> Definition of \(E(X)\) (p. 110), then \(E(X^2)\) by squaring the values (p. 112), then the shortcut formula (p. 115).</p>
+      $$E(X)=${v.map((x, i) => `(${x})(${t1(p.pr[i])})`).join("+")}=${tr(EX)}$$
+      $$E(X^2)=${v.map((x, i) => `(${x * x})(${t1(p.pr[i])})`).join("+")}=${tr(EX2)}$$
+      $$V(X)=E(X^2)-[E(X)]^2=${tr(EX2)}-(${tr(EX)})^2=${tr(EX2)}-${tr(EX * EX)}=${tr(V)}$$
+      <p><b>(b)</b> The price is a linear function of \(X\), so use \(E(aX+b)=a\,E(X)+b\) (p. 113). No new sum is needed.</p>
+      $$E(${p.a}X-${p.b})=${p.a}(${tr(EX)})-${p.b}=${tr(EP)}$$
+      <p><b>(c)</b> \(V(aX+b)=a^2\,V(X)\) (p. 115). Subtracting ${p.b} moves every price by the same amount, so it does not change the spread.</p>
+      $$V(${p.a}X-${p.b})=${p.a}^2(${tr(V)})=${p.a * p.a}(${tr(V)})=${tr(VP)}$$
+      <p><b>(d)</b> \(h(X)\) is not linear, so \(E[h(X)]\) is <em>not</em> \(h(E(X))\). Use \(E[h(X)]=\sum h(x)\,p(x)\) (p. 112). The sum splits into two pieces you already have.</p>
+      $$E(X-${tr(kk)}X^2)=E(X)-${tr(kk)}\,E(X^2)=${tr(EX)}-${tr(kk)}(${tr(EX2)})=${fx(EH, 4)}$$
+      <p>Check: \(h(E(X))=${tr(EX)}-${tr(kk)}(${tr(EX)})^2=${fx(EX - kk * EX * EX, 4)}\), which is not the answer.</p>` +
+      exam("a pmf followed by a price of the form \\(aX+b\\). Name the rule, \\(E(aX+b)=aE(X)+b\\) or \\(V(aX+b)=a^2V(X)\\), then substitute. The standard deviation of the price is \\(\\lvert a\\rvert\\,\\sigma_X\\).");
+    return {html, sol};
+  }},
+
+/* 3 */{title: "Bernoulli variable: E(X²) and V(X) = p(1 − p)", ref: "Devore §3.3, Exercise 33, p. 116",
+  ctxs: ["a randomly selected vehicle passes an emissions test", "a randomly selected circuit board passes final inspection",
+         "a randomly selected voter supports a ballot measure", "a randomly selected battery lasts more than 100 hours"],
+  orig: {ctx: 0, e: 98},
+  gen() { return {ctx: ri(0, 3), e: pick([5, 12, 17, 25, 40, 77, 98, 100])}; },
+  build(p, c) {
+    const O = ["0", "1", "p", "1 − p", "p²", "(1 − p)²", "p(1 − p)"], IN = ["X", "X²", "X − p", "(X − p)²", "p"];
+    const html = `<p>Let \\(X=1\\) if ${this.ctxs[p.ctx]} and \\(X=0\\) otherwise. Then \\(X\\) is a Bernoulli rv with pmf \\(p(1)=p\\) and \\(p(0)=1-p\\).</p>
+      ${part("a", `<p>Compute \\(E(X^2)\\).</p><div class="row">\\(E(X^2)\\) = ${c.sel(O, 2)}</div>`)}
+      ${part("b", `<p>Show that \\(V(X)=p(1-p)\\).</p>
+        <div class="proof"><span class="l">\\(V(X)\\)</span><span>=</span><span>\\(E\\big(\\) ${c.sel(IN, 1)} \\(\\big)-[E(X)]^2\\)</span>
+        <span class="l"></span><span>=</span><span>${c.sel(O, 2)} \\(-\\;p^2\\)</span>
+        <span class="l"></span><span>=</span><span>\\(p(1-p)\\)</span></div>`)}
+      ${part("c", `<p>Compute \\(E(X^{${p.e}})\\).</p><div class="row">\\(E(X^{${p.e}})\\) = ${c.sel(O, 2)}</div>`)}`;
+    const sol = R`<p><b>(a)</b> Use \(E[h(X)]=\sum h(x)\,p(x)\) with \(h(x)=x^2\) (p. 112). The only possible values are 0 and 1.</p>
+      $$E(X^2)=0^2\cdot(1-p)+1^2\cdot p=p$$
+      <p><b>(b)</b> Start from the shortcut formula (p. 115). The box is \(X^2\). Then substitute \(E(X^2)=p\) from (a) and \(E(X)=p\) (Example 3.18, p. 111).</p>
+      $$V(X)=E(X^2)-[E(X)]^2$$
+      $$=p-p^2$$
+      $$=p(1-p)$$
+      <p>Line 1 is the shortcut formula, line 2 is substitution, line 3 factors out \(p\). That is the whole justification.</p>
+      <p><b>(c)</b> \(0^{${p.e}}=0\) and \(1^{${p.e}}=1\), so \(X^{${p.e}}\) takes exactly the same values as \(X\), with the same probabilities.</p>
+      $$E(X^{${p.e}})=0^{${p.e}}\cdot(1-p)+1^{${p.e}}\cdot p=p$$
+      <p>The same is true for any positive power: \(E(X^k)=p\).</p>` +
+      exam("a “show that” with two or three lines. One equals sign per line, and say which fact each line uses (definition of \\(E[h(X)]\\), the shortcut formula, algebra). Meichsner's proofs are this size.");
+    return {html, sol};
+  }},
+
+/* 4 */{title: "Insurance premium with a deductible", ref: "Devore §3.3, Exercise 36, pp. 116–117",
+  orig: {vals: [0, 1000, 5000, 10000], pr: [81, 8, 9, 2], d: 500, gain: 100},
+  gen() {
+    const vals = pick([[0, 1000, 5000, 10000], [0, 2000, 5000, 10000], [0, 1000, 4000, 8000], [0, 1500, 6000, 12000], [0, 2000, 8000, 15000]]);
+    const d = pick([250, 500, 500, 750].filter(x => x < vals[1]));
+    const p0 = ri(70, 88), rest = scaleInt([0.3 + Math.random(), 0.3 + Math.random(), 0.1 + Math.random() * 0.3], 100 - p0, 1);
+    return {vals, pr: [p0, ...rest], d, gain: pick([50, 75, 100, 150, 200])};
+  },
+  build(p, c) {
+    const v = p.vals, pr = p.pr.map(q => q / 100), h = v.map(x => Math.max(x - p.d, 0));
+    const EY = sum(h.map((y, i) => y * pr[i])), prem = EY + p.gain;
+    const html = `<p>Let \\(X\\) be the damage incurred (in $) in a certain type of accident during a given year. Possible \\(X\\) values are ${v.slice(0, -1).map(big).join(", ")}, and ${big(v[3])}, with probabilities ${p.pr.slice(0, -1).map(h2).join(", ")}, and ${h2(p.pr[3])}, respectively. A particular company offers a $${p.d} deductible policy. If the company wishes its expected profit to be ${money(p.gain)}, what premium amount should it charge?</p>
+      ${part("1", `<p>Let \\(h(X)\\) be the amount paid by the insurance company after the client pays the deductible. Fill in the table. (When there is no damage the company pays nothing.)</p>
+        ${table(null, [["\\(x\\)", ...v.map(big)], ["\\(h(x)\\)", "0", ...h.slice(1).map(y => c.num(y, 2))], ["\\(p(x)\\)", ...p.pr.map(h2)]], "fill")}`)}
+      ${part("2", `<p>Let \\(Y=h(X)\\). Compute \\(E(Y)\\), the expected amount the company pays per client.</p><div class="row">\\(E(Y)\\) = $ ${c.num(EY, 2)}</div>`)}
+      ${part("3", `<p>The company wants premium − expected payout = ${money(p.gain)}. What premium should it charge per client?</p><div class="row">Premium = $ ${c.num(prem, 2)}</div>`)}`;
+    const sol = R`<p><b>Step 1.</b> The client pays the first $${p.d} of any damage, so the company pays \(x-${p.d}\). With no damage there is nothing to pay, so the payout is 0, not \(-${p.d}\).</p>
+      $$h(x)=\begin{cases}0 & x=0\\ x-${p.d} & x\gt 0\end{cases}$$
+      ${table(null, [["\\(x\\)", ...v.map(big)], ["\\(h(x)\\)", ...h.map(big)], ["\\(p(x)\\)", ...p.pr.map(h2)]])}
+      <p><b>Step 2.</b> \(Y=h(X)\) is a random variable, so use \(E[h(X)]=\sum h(x)\,p(x)\) (p. 112).</p>
+      $$E(Y)=${h.map((y, i) => `(${y})(${h2(p.pr[i])})`).join("+")}=${tr(EY)}$$
+      <p><b>Step 3.</b> Expected profit per client is the premium minus the expected payout.</p>
+      $$\text{premium}-${tr(EY)}=${p.gain}\quad\Longrightarrow\quad\text{premium}=${tr(prem)}$$
+      <p>The company should charge <span class="ans">${money(+prem.toFixed(2))}</span> per client.</p>
+      <p>Why you cannot just write \(E(X)-${p.d}\): that would give \(${tr(sum(v.map((x, i) => x * pr[i])))}-${p.d}=${tr(sum(v.map((x, i) => x * pr[i])) - p.d)}\), which charges the ${h2(p.pr[0])} of clients with no damage a payout of \(-${p.d}\). Because \(h\) is not linear (it has a kink at 0), you need the table.</p>` +
+      exam("an insurance or warranty payout with a deductible or a cap. Write \\(h(x)\\) piece by piece, tabulate it beside \\(p(x)\\), then add \\(h(x)p(x)\\). A one-line sentence for each step is enough justification.");
+    return {html, sol};
+  }},
+
+/* 5 */{title: "Pounds left in stock: a linear function", ref: "Devore §3.3, Exercise 39, p. 117",
+  orig: {S: 100, b: 6, pr: [3, 5, 1, 1]},
+  gen() {
+    const b = pick([4, 5, 6, 8, 10]), S = pick([60, 80, 100, 120, 150].filter(s => s - 4 * b >= 20));
+    let pr; do { pr = [ri(1, 5), ri(1, 5), ri(1, 4), ri(1, 3)]; } while (sum(pr) !== 10);
+    return {S, b, pr};
+  },
+  build(p, c) {
+    const xs = [1, 2, 3, 4], pr = p.pr.map(q => q / 10);
+    const EX = sum(xs.map((x, i) => x * pr[i])), EX2 = sum(xs.map((x, i) => x * x * pr[i])), V = EX2 - EX * EX;
+    const EW = p.S - p.b * EX, VW = p.b * p.b * V;
+    const html = `<p>A chemical supply company currently has in stock ${p.S} lb of a certain chemical, which it sells to customers in ${p.b}-lb batches. Let \\(X\\) be the number of batches ordered by a randomly chosen customer, and suppose that \\(X\\) has the following pmf.</p>
+      ${table(null, [["\\(x\\)", ...xs], ["\\(p(x)\\)", ...p.pr.map(t1)]])}
+      ${part("a", `<p>Compute \\(E(X)\\) and \\(V(X)\\).</p><div class="row">\\(E(X)\\) = ${c.num(EX, 2)}</div><div class="row">\\(V(X)\\) = ${c.num(V, 2)}</div>`)}
+      ${part("b", `<p>Compute the expected number of pounds left after the next customer's order is shipped and the variance of the number of pounds left (in lb²). (<em>Hint:</em> the number of pounds left is a linear function of \\(X\\). Two decimal places.)</p>
+        <div class="row">expected weight left ${c.num(EW, {dp: 2, unit: "lb"})}</div><div class="row">variance of weight left ${c.num(VW, {dp: 2, unit: "lb²"})}</div>`)}`;
+    const wx = xs.map(x => p.S - p.b * x);
+    const sol = R`<p><b>(a)</b></p>
+      $$E(X)=${xs.map((x, i) => `(${x})(${t1(p.pr[i])})`).join("+")}=${tr(EX)}$$
+      $$E(X^2)=${xs.map((x, i) => `(${x * x})(${t1(p.pr[i])})`).join("+")}=${tr(EX2)}$$
+      $$V(X)=E(X^2)-[E(X)]^2=${tr(EX2)}-(${tr(EX)})^2=${tr(V)}$$
+      <p><b>(b)</b> Each batch takes ${p.b} lb, so after an order of \(X\) batches the weight left is \(W=${p.S}-${p.b}X\). That is \(aX+b\) with \(a=-${p.b}\) and \(b=${p.S}\).</p>
+      $$E(${p.S}-${p.b}X)=${p.S}-${p.b}\,E(X)=${p.S}-${p.b}(${tr(EX)})=${tr(EW)}\text{ lb}$$
+      $$V(${p.S}-${p.b}X)=(-${p.b})^2\,V(X)=${p.b * p.b}(${tr(V)})=${tr(VW)}\text{ lb}^2$$
+      <p>The minus sign disappears in the variance because \(a\) is squared (p. 115). A variance is never negative.</p>
+      <div class="spikes"><figure>${spikes(xs, pr, p.pr.map(t1), EX, "X", "= " + tr(EX))}<figcaption>Batches ordered, \(X\)</figcaption></figure>
+      <figure>${spikes(wx, pr, p.pr.map(t1), EW, "W", "= " + tr(EW))}<figcaption>Pounds left, \(W=${p.S}-${p.b}X\)</figcaption></figure></div>
+      <p class="figcap">Added picture. The same probabilities sit on new values: flipped (because of the minus sign) and ${p.b} times as far apart. The balance point moves to \(${p.S}-${p.b}(${tr(EX)})=${tr(EW)}\), the standard deviation is multiplied by ${p.b}, and the variance by ${p.b * p.b}.</p>` +
+      exam(`“the amount left / the cost / the profit is a linear function of \\(X\\)”. Write the function first (\\(W=${p.S}-${p.b}X\\)), then apply \\(E(aX+b)\\) and \\(V(aX+b)\\). Give the units: lb for the mean, lb² for the variance.`);
+    return {html, sol};
+  }},
+
+/* 6 */{title: "Variance from E[X(X − 1)]", ref: "Devore §3.3, Exercise 42, p. 117",
+  orig: {mu: 50, V: 25},
+  gen() { return {mu: 5 * ri(4, 18), V: 5 * ri(1, 16)}; },      // tenths, so mu is 2.0 to 9.0 and V is 0.5 to 8.0
+  build(p, c) {
+    const mu = p.mu / 10, V = p.V / 10, EX2 = V + mu * mu, m = EX2 - mu;
+    const opts = ["+E(X)-", "+E(X)+", "-E(X)-", "-E(X)+"].map(m => `\\(V(X)=\\) \\(E[X(X-1)]${m}[E(X)]^2\\)`);
+    const html = `<p>Suppose \\(E(X)=${tr(mu)}\\) and \\(E[X(X-1)]=${tr(m)}\\).</p>
+      ${part("a", `<p>What is \\(E(X^2)\\)? [<em>Hint:</em> first verify that \\(E[X(X-1)]=E[X^2-X]\\) \\(=E(X^2)-E(X)\\).]</p><div class="row">${c.num(EX2, 2)}</div>`)}
+      ${part("b", `<p>What is \\(V(X)\\)?</p><div class="row">${c.num(V, 2)}</div>`)}
+      ${part("c", `<p>What is the general relationship among the quantities \\(E(X)\\), \\(E[X(X-1)]\\), and \\(V(X)\\)?</p>${c.radio(opts, 0, true)}`)}`;
+    const sol = R`<p><b>(a)</b> First the hint. Using \(E[h(X)]=\sum h(x)\,p(x)\) (p. 112) with \(h(x)=x(x-1)=x^2-x\), the sum splits in two:</p>
+      $$E[X(X-1)]=\sum_D (x^2-x)\,p(x)=\sum_D x^2p(x)-\sum_D x\,p(x)=E(X^2)-E(X)$$
+      <p>Now solve for \(E(X^2)\):</p>
+      $$E(X^2)=E[X(X-1)]+E(X)=${tr(m)}+${tr(mu)}=${tr(EX2)}$$
+      <p><b>(b)</b> Shortcut formula (p. 115):</p>
+      $$V(X)=E(X^2)-[E(X)]^2=${tr(EX2)}-(${tr(mu)})^2=${tr(EX2)}-${tr(mu * mu)}=${tr(V)}$$
+      <p><b>(c)</b> Put (a) into the shortcut formula:</p>
+      $$V(X)=E(X^2)-[E(X)]^2=E[X(X-1)]+E(X)-[E(X)]^2$$
+      <p>This is a handy trick later: for some distributions \(E[X(X-1)]\) is much easier to find than \(E(X^2)\).</p>` +
+      exam("a short “verify that” step like the hint in (a). Write the sum, split it, and name the two pieces as \\(E(X^2)\\) and \\(E(X)\\). Then one line with the shortcut formula.");
+    return {html, sol};
+  }}
+];
+
+Practice.page({
+  key: "assignment-5",
+  where: "Devore 9e, Section 3.3",
+  title: "Assignment 5 practice",
+  intro: "All 6 questions from the WebAssign assignment on expected values. Each one opens with the numbers from the assignment. Press <b>New numbers</b> for a fresh version, as many times as you like.",
+  originalLabel: "Assignment numbers",
+  questions: QUESTIONS
+});
+if (typeof module !== "undefined") module.exports = {QUESTIONS};
+</script>
+</body>
+</html>

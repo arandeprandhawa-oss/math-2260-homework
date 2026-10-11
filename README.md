@@ -11,5 +11,6 @@
 - [Assignment 2](https://arandeprandhawa-oss.github.io/math-2260-homework/#assignment-2) - [open on its own](https://arandeprandhawa-oss.github.io/math-2260-homework/pages/assignment-2.html)
 - [Assignment 3](https://arandeprandhawa-oss.github.io/math-2260-homework/#assignment-3) - [open on its own](https://arandeprandhawa-oss.github.io/math-2260-homework/pages/assignment-3.html)
 - [Assignment 4](https://arandeprandhawa-oss.github.io/math-2260-homework/#assignment-4) - [open on its own](https://arandeprandhawa-oss.github.io/math-2260-homework/pages/assignment-4.html)
+- [Assignment 5](https://arandeprandhawa-oss.github.io/math-2260-homework/#assignment-5) - [open on its own](https://arandeprandhawa-oss.github.io/math-2260-homework/pages/assignment-5.html)
 - [Sections 3.1–3.3](https://arandeprandhawa-oss.github.io/math-2260-homework/#sections-3-1-3-3) - [open on its own](https://arandeprandhawa-oss.github.io/math-2260-homework/pages/sections-3-1-to-3-3.html)
 - [Proof practice](https://arandeprandhawa-oss.github.io/math-2260-homework/#proof-practice) - [open on its own](https://arandeprandhawa-oss.github.io/math-2260-homework/pages/proof-practice.html)
