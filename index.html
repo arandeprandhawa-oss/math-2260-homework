@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math-2260-homework</title>
+<style>
+:root{--bg:#f6f7f9;--bar:#fff;--text:#1d2127;--muted:#5f6b7a;--line:#e3e6eb;--accent:#2f6fed;--accent-bg:#e8f0fe}
+@media (prefers-color-scheme:dark){:root{--bg:#111418;--bar:#181c21;--text:#e8ebef;--muted:#9aa4b1;--line:#2a3038;--accent:#7aa7ff;--accent-bg:#1e2a40}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--bar);border-bottom:1px solid var(--line);min-height:52px}
+h1{font-size:16px;font-weight:650;margin:0;white-space:nowrap}
+.tabwrap{flex:1;min-width:0;display:flex;flex-direction:column}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:8px 0}
+nav::-webkit-scrollbar{display:none}
+#slide{-webkit-appearance:none;appearance:none;display:block;width:100%;height:14px;margin:-4px 0 4px;padding:0;background:transparent;cursor:pointer}
+#slide[hidden]{display:none}
+#slide::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--line)}
+#slide::-webkit-slider-thumb{-webkit-appearance:none;width:var(--tw,48px);height:8px;margin-top:-2px;border:0;border-radius:4px;background:var(--muted)}
+#slide::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
+#slide::-moz-range-thumb{width:var(--tw,48px);height:8px;border:0;border-radius:4px;background:var(--muted)}
+#slide:hover::-webkit-slider-thumb,#slide:active::-webkit-slider-thumb{background:var(--accent)}
+#slide:hover::-moz-range-thumb,#slide:active::-moz-range-thumb{background:var(--accent)}
+#slide:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:4px}
+nav button{flex:none;border:0;background:none;color:var(--muted);font:inherit;padding:7px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--text);background:var(--line)}
+nav button[aria-selected="true"]{color:var(--accent);background:var(--accent-bg);font-weight:600}
+nav button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+a.open{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
+a.open:hover{color:var(--text)}
+iframe{flex:1;width:100%;border:0;background:#fff}
+@media (max-width:640px){header{flex-wrap:wrap;gap:0;padding-top:10px}h1{flex:1}.tabwrap{order:3;flex:none;width:100%}}
+</style>
+</head>
+<body>
+<header>
+<h1>Math-2260-homework</h1>
+<div class="tabwrap">
+<nav role="tablist" id="tabs" aria-label="Pages"></nav>
+<input type="range" id="slide" min="0" max="1" value="0" step="1" aria-label="Scroll the tabs" hidden>
+</div>
+<a class="open" id="open" target="_blank" rel="noopener">Open &#8599;</a>
+</header>
+<iframe id="frame" title="Page content"></iframe>
+<script>
+const SITE = "Math-2260-homework";
+const tabs = [{"label":"Home","slug":"home","file":"pages/00-home.html"},{"label":"Formula sheet","slug":"formula-sheet","file":"pages/01-formula-sheet.html"},{"label":"Assignment 1","slug":"assignment-1","file":"pages/assignment-1.html"},{"label":"Assignment 2","slug":"assignment-2","file":"pages/assignment-2.html"},{"label":"Assignment 3","slug":"assignment-3","file":"pages/assignment-3.html"},{"label":"Assignment 4","slug":"assignment-4","file":"pages/assignment-4.html"},{"label":"Sections 3.1–3.3","slug":"sections-3-1-3-3","file":"pages/sections-3-1-to-3-3.html"}];
+const nav = document.getElementById('tabs');
+const frame = document.getElementById('frame');
+const openLink = document.getElementById('open');
+const slide = document.getElementById('slide');
+let current = null;
+tabs.forEach(t => {
+  const b = document.createElement('button');
+  b.setAttribute('role', 'tab');
+  b.textContent = t.label;
+  b.onclick = () => { location.hash = t.slug; };
+  t.el = b;
+  nav.appendChild(b);
+});
+nav.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const i = tabs.findIndex(t => t.el === document.activeElement);
+  if (i < 0) return;
+  const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+  n.el.focus();
+  location.hash = n.slug;
+});
+function show() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  const t = tabs.find(x => x.slug === h) || tabs[0];
+  if (t !== current) {
+    const url = new URL(t.file, location.href).href;
+    if (current) frame.contentWindow.location.replace(url); else frame.src = url;
+    current = t;
+  }
+  openLink.href = t.file;
+  tabs.forEach(x => { x.el.setAttribute('aria-selected', x === t); x.el.tabIndex = x === t ? 0 : -1; });
+  t.el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  document.title = t.label + ' \u00b7 ' + SITE;
+}
+// Slider under the tabs: appears only when the tabs don't all fit
+function syncSlide() {
+  const max = nav.scrollWidth - nav.clientWidth;
+  slide.hidden = max <= 1;
+  if (slide.hidden) return;
+  slide.max = max;
+  slide.value = nav.scrollLeft;
+  slide.style.setProperty('--tw', Math.max(36, Math.round(nav.clientWidth * nav.clientWidth / nav.scrollWidth)) + 'px');
+}
+slide.addEventListener('input', () => { nav.scrollLeft = +slide.value; });
+nav.addEventListener('scroll', () => { slide.value = nav.scrollLeft; });
+nav.addEventListener('wheel', e => {
+  if (nav.scrollWidth <= nav.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  e.preventDefault();
+  nav.scrollLeft += e.deltaY;
+}, { passive: false });
+if (window.ResizeObserver) new ResizeObserver(syncSlide).observe(nav);
+addEventListener('resize', syncSlide);
+addEventListener('hashchange', show);
+show();
+syncSlide();
+</script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assignment 4</title>
+<!-- The home page builds this page's card from the block below. -->
+<script type="application/json" id="site-card">
+{"num": "A4", "title": "Assignment 4 practice", "text": "Conditional probability from tables and Venn diagrams, Bayes' theorem, independence, series and parallel systems, a short proof.", "meta": ["§2.4–2.5", "13 questions", "New numbers every time"]}
+</script>
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<style>
+/* Layout: one reading column of problem sheets; a sticky strip of 13 question chips tracks progress. */
+/* Colours and fonts come from site.css */
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55}
+.wrap{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:28px 80px;display:flex;flex-direction:column;gap:20px}
+header.top h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,4.5vw,2.2rem);line-height:1.15;margin:0 0 6px;text-wrap:balance}
+header.top p{margin:0;color:var(--muted);max-width:62ch}
+.eyebrow{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:8px}
+.topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.tally{color:var(--muted);font-size:.9rem;margin-left:auto}
+nav.strip{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;display:flex;gap:6px;overflow-x:auto}
+nav.strip a{font-family:var(--mono);font-size:.85rem;flex:0 0 2.3rem;height:2.1rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);text-decoration:none}
+nav.strip a:hover{border-color:var(--accent)}
+nav.strip a[data-s="ok"]{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:500}
+nav.strip a[data-s="part"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+section.q{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px clamp(16px,4vw,28px) 22px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 70px);min-width:0}
+.qhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.qnum{font-family:var(--mono);font-size:1.05rem;font-weight:500;color:var(--accent)}
+.qtitle{font-weight:600;font-size:1.02rem}
+.qref{font-family:var(--mono);font-size:.76rem;color:var(--muted);margin-left:auto}
+.qbody{font-family:var(--serif);font-size:1.06rem;line-height:1.6;min-width:0}
+.qbody p{margin:0 0 12px;max-width:68ch}
+.qbody .part{display:grid;grid-template-columns:2.1rem minmax(0,1fr);margin:0 0 14px}
+.qbody .part>b{font-weight:400;color:var(--muted)}
+.qbody .part>div>p:last-child{margin-bottom:0}
+.row{margin:8px 0;line-height:2.5}
+.row .f{vertical-align:middle;line-height:1.3;margin-inline:2px}
+.given{font-family:var(--sans);font-size:.98rem;display:flex;flex-wrap:wrap;gap:6px 26px;margin:0 0 12px 8px}
+.f{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans)}
+.f input,.f select{font-family:var(--mono);font-size:1rem;font-variant-numeric:tabular-nums;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
+.f input{width:6.2rem}
+.f select{max-width:100%}
+.f input:focus-visible,.f select:focus-visible,button:focus-visible,nav.strip a:focus-visible,.opts input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mk{font-style:normal;font-family:var(--sans);font-weight:600;font-size:.95rem;min-width:0}
+[data-r="ok"] .mk{color:var(--good)} [data-r="ok"] .mk::after{content:"\2713"}
+[data-r="no"] .mk{color:var(--bad)} [data-r="no"] .mk::after{content:"\2717"}
+[data-r="ok"].f input,[data-r="ok"].f select{border-color:var(--good);background:var(--good-soft)}
+[data-r="no"].f input,[data-r="no"].f select{border-color:var(--bad);background:var(--bad-soft)}
+.opts{display:flex;flex-direction:column;gap:6px;margin:8px 0 12px;font-size:1rem}
+.opts label{display:grid;grid-template-columns:1.5rem minmax(0,1fr);align-items:start;cursor:pointer}
+.opts input{margin-top:.42em;accent-color:var(--accent)}
+.opts .mk::before{font-weight:400;color:var(--muted)}
+.opts[data-r="ok"] .mk::after{content:"\2713  correct"} .opts[data-r="no"] .mk::after{content:"\2717  not quite"}
+.tw{overflow-x:auto;margin:6px 0 14px}
+table{border-collapse:collapse;font-family:var(--mono);font-size:.93rem;font-variant-numeric:tabular-nums}
+caption{font-family:var(--sans);font-weight:600;font-size:.9rem;text-align:left;padding-bottom:4px}
+th,td{padding:6px 14px;text-align:right;border-bottom:1px solid var(--line)}
+th{font-family:var(--sans);font-weight:500;color:var(--muted);font-size:.84rem}
+td:first-child,th:first-child{text-align:left}
+.proof{display:grid;grid-template-columns:auto auto auto;gap:10px 12px;align-items:center;justify-content:start;font-size:1rem;margin:10px 0;overflow-x:auto;white-space:nowrap;padding:3px 3px 8px}
+.proof .l{justify-self:end;text-align:right}
+figure{margin:6px 0 14px;overflow-x:auto}
+figure svg{display:block;max-width:100%;height:auto;font-family:var(--mono)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+button{font:500 .92rem var(--sans);padding:8px 14px;border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button.primary:hover{color:var(--on-accent);filter:brightness(1.08)}
+button.quiet{border-color:transparent;background:none;color:var(--muted);padding-inline:8px}
+.status{font-size:.92rem;font-weight:500;margin-left:auto}
+.status[data-s="ok"]{color:var(--good)} .status[data-s="part"]{color:var(--bad)}
+.sol{margin-top:16px;padding:14px 16px;background:var(--accent-soft);border-radius:4px;font-size:.98rem;min-width:0}
+.sol h3{margin:0 0 8px;font-size:.76rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.sol p{margin:0 0 10px} .sol p:last-child{margin-bottom:0}
+.sol mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}
+.sol .ans{font-family:var(--mono);font-weight:500}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+<style id="site-zoom">@media (min-width:900px){html{zoom:0.8}}</style></head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Devore 9e, Sections 2.4 and 2.5</div>
+    <h1>Assignment 4 practice</h1>
+    <p>All 13 questions on conditional probability and independence. Each one opens with the numbers from the assignment. Press <b>New numbers</b> for a fresh version, as many times as you like.</p>
+    <div class="topbar">
+      <button class="primary" id="allNew">New numbers for all 13</button>
+      <button id="allOrig">Back to assignment numbers</button>
+      <span class="tally" id="tally"></span>
+    </div>
+  </header>
+  <nav class="strip" id="strip" aria-label="Questions"></nav>
+  <main id="main" style="display:flex;flex-direction:column;gap:20px"></main>
+</div>
+
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};
+</script>
+<script src="tex-svg.js" async></script>
+<script>
+/*LOGIC-START*/
+const R=String.raw;
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[ri(0,a.length-1)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const fx=(x,dp)=>(Math.round(x*10**dp+1e-9)/10**dp).toFixed(dp);
+const tr=x=>String(+x.toFixed(6));
+const h2=v=>(v/100).toFixed(2), h3=v=>(v/1000).toFixed(3);
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const frac=(n,d)=>{if(n===0)return '0';const g=gcd(n,d);return d/g===1?String(n/g):R`\tfrac{${n/g}}{${d/g}}`};
+function scaleInt(w,total,min){const s=w.reduce((a,b)=>a+b,0);let v=w.map(x=>Math.max(min,Math.round(x/s*total)));
+  const diff=total-v.reduce((a,b)=>a+b,0);v[v.indexOf(Math.max(...v))]+=diff;return v}
+
+function ctx(qid){const parts=[];const id=()=>`${qid}-${parts.length}`;
+  return {parts,
+    num(ans,dp){const i=id();parts.push({t:'num',ans,tol:dp==null?5e-4:0.5*10**-dp});
+      return `<span class="f"><input type="text" inputmode="decimal" autocomplete="off" id="${i}" aria-label="Answer"><i class="mk"></i></span>`},
+    sel(opts,ans){const i=id();parts.push({t:'sel',ans});
+      return `<span class="f"><select id="${i}" aria-label="Choose"><option value="">choose&hellip;</option>${opts.map((o,k)=>`<option value="${k}">${o}</option>`).join('')}</select><i class="mk"></i></span>`},
+    radio(opts,ans,mix){const i=id();let order=opts.map((_,k)=>k);if(mix)order=shuffle(order);parts.push({t:'radio',ans});
+      return `<div class="opts" id="${i}" role="radiogroup">${order.map(k=>`<label><input type="radio" name="${i}" value="${k}" id="${i}-o${k}"><span>${opts[k]}</span></label>`).join('')}<span class="mk"></span></div>`},
+    multi(opts,ans){const i=id();const order=shuffle(opts.map((_,k)=>k));parts.push({t:'multi',ans});
+      return `<div class="opts" id="${i}">${order.map(k=>`<label><input type="checkbox" value="${k}" id="${i}-o${k}"><span>${opts[k]}</span></label>`).join('')}<span class="mk"></span></div>`}
+  }}
+const part=(l,h)=>`<div class="part"><b>(${l})</b><div>${h}</div></div>`;
+
+const BLOOD=['O','A','B','AB'], SIZE=['small','medium','large'], SZ=['S','M','L'], PAT=['plaid','print','stripe'], PT=['Pl','Pr','St'], SLV=['short','long'];
+
+const QS=[
+/* 1 */{title:'Joint probability table',ref:'§2.4, Exercise 45, p. 82',
+  orig:{t:[[82,104,5,4],[137,141,18,9],[215,204,61,20]],c:2,g:0},
+  gen(){const rw=[ri(15,35),ri(20,40),ri(30,55)],cw=[ri(35,48),ri(35,48),ri(4,14),ri(2,6)],w=[];
+    for(let r=0;r<3;r++)for(let c=0;c<4;c++)w.push(rw[r]*cw[c]*(0.75+Math.random()*0.5));
+    const v=scaleInt(w,1000,2);return{t:[v.slice(0,4),v.slice(4,8),v.slice(8,12)],c:ri(0,2),g:ri(0,2)}},
+  build(p,c){const t=p.t,k=p.c+1,g=p.g+1;
+    const row=r=>t[r].reduce((a,b)=>a+b,0),col=j=>t[0][j]+t[1][j]+t[2][j];
+    const PA=col(1),PC=row(p.c),AC=t[p.c][1],PB=col(2),num=row(p.g)-t[p.g][2];
+    const opts=[`If a person has type A blood, the probability that he is from ethnic group ${k} is given by <i>P</i>(<i>A</i>|<i>C</i>).`,
+      `If a person has type B blood, the probability that he is from ethnic group ${k} is given by <i>P</i>(<i>C</i>|<i>A</i>).`,
+      `If a person has type A blood, the probability that he is from ethnic group ${k} is given by <i>P</i>(<i>C</i>|<i>A</i>).`,
+      `If we know that the individual came from ethnic group ${k}, the probability that he has type A blood is given by <i>P</i>(<i>A</i>|<i>C</i>).`,
+      `If a person has type B blood, the probability that he is from ethnic group ${k} is given by <i>P</i>(<i>A</i>|<i>C</i>).`,
+      `If we know that the individual came from ethnic group ${k}, the probability that he has type A blood is given by <i>P</i>(<i>C</i>|<i>A</i>).`];
+    const html=`<p>The population of a particular country consists of three ethnic groups. Each individual belongs to one of the four major blood groups. The joint probability table gives the proportions of individuals in the various ethnic group and blood group combinations.</p>
+    <div class="tw"><table><tr><th>Ethnic group</th>${BLOOD.map(b=>`<th>${b}</th>`).join('')}</tr>${t.map((r,i)=>`<tr><td>${i+1}</td>${r.map(v=>`<td>${h3(v)}</td>`).join('')}</tr>`).join('')}</table></div>
+    <p>Suppose that an individual is randomly selected from the population, and define events by <i>A</i> = {type A selected}, <i>B</i> = {type B selected}, and <i>C</i> = {ethnic group ${k} selected}.</p>
+    ${part('a',`<p>Calculate <i>P</i>(<i>A</i>), <i>P</i>(<i>C</i>), and <i>P</i>(<i>A</i> &cap; <i>C</i>). (Three decimal places.)</p>
+      <div class="row"><i>P</i>(<i>A</i>) = ${c.num(PA/1000,3)}</div><div class="row"><i>P</i>(<i>C</i>) = ${c.num(PC/1000,3)}</div><div class="row"><i>P</i>(<i>A</i> &cap; <i>C</i>) = ${c.num(AC/1000,3)}</div>`)}
+    ${part('b',`<p>Calculate both <i>P</i>(<i>A</i>|<i>C</i>) and <i>P</i>(<i>C</i>|<i>A</i>). (Three decimal places.)</p>
+      <div class="row"><i>P</i>(<i>A</i>|<i>C</i>) = ${c.num(AC/PC,3)}</div><div class="row"><i>P</i>(<i>C</i>|<i>A</i>) = ${c.num(AC/PA,3)}</div>
+      <p>Explain in context what each of these probabilities represents. (Select all that apply.)</p>${c.multi(opts,[2,3])}`)}
+    ${part('c',`<p>If the selected individual does not have type B blood, what is the probability that he or she is from ethnic group ${g}? (Three decimal places.)</p><div class="row">${c.num(num/(1000-PB),3)}</div>`)}`;
+    const sol=R`<p><b>(a)</b> Add down the type A column, across the group ${k} row, and read the cell where they meet.</p>
+    $$P(A)=${t.map(r=>h3(r[1])).join('+')}=${h3(PA)}$$
+    $$P(C)=${t[p.c].map(h3).join('+')}=${h3(PC)}$$
+    $$P(A\cap C)=${h3(AC)}$$
+    <p><b>(b)</b> Same numerator, different denominator.</p>
+    $$P(A\mid C)=\frac{P(A\cap C)}{P(C)}=\frac{${h3(AC)}}{${h3(PC)}}=${fx(AC/PC,3)}$$
+    $$P(C\mid A)=\frac{P(A\cap C)}{P(A)}=\frac{${h3(AC)}}{${h3(PA)}}=${fx(AC/PA,3)}$$
+    <p>\(P(A\mid C)\): we know the person is from group ${k}, and ask for type A. \(P(C\mid A)\): we know the person has type A, and ask for group ${k}.</p>
+    <p><b>(c)</b> Condition on \(B'\). The numerator is the group ${g} row without its type B cell.</p>
+    $$P(B')=1-${h3(PB)}=${h3(1000-PB)}$$
+    $$P(\text{group ${g}}\mid B')=\frac{${h3(row(p.g))}-${h3(t[p.g][2])}}{${h3(1000-PB)}}=\frac{${h3(num)}}{${h3(1000-PB)}}=${fx(num/(1000-PB),3)}$$`;
+    return{html,sol}}},
+
+/* 2 */{title:'Three credit cards',ref:'§2.4, Exercise 47, p. 82',
+  orig:{abc:9,ab:21,ac:2,bc:1,a:28,b:9,c:8},
+  gen(){return{abc:ri(3,10),ab:ri(8,22),ac:ri(1,6),bc:ri(1,6),a:ri(15,30),b:ri(5,15),c:ri(3,10)}},
+  build(p,c){const A=p.a+p.ab+p.ac+p.abc,B=p.b+p.ab+p.bc+p.abc,C=p.c+p.ac+p.bc+p.abc,AB=p.ab+p.abc,AC=p.ac+p.abc,BC=p.bc+p.abc,T=p.abc,U=p.a+p.b+p.c+p.ab+p.ac+p.bc+p.abc;
+    const opts=['<i>P</i>(<i>B</i> | <i>A</i>) is the probability that given that a student has a MasterCard, they also have a Visa card.',
+      '<i>P</i>(<i>A</i> | <i>B</i>) is the probability that a student does not have a MasterCard or a Visa card.',
+      '<i>P</i>(<i>B</i> | <i>A</i>) is the probability that a student does not have a MasterCard or a Visa card.',
+      '<i>P</i>(<i>A</i> | <i>B</i>) is the probability that given that a student has a MasterCard, they also have a Visa card.',
+      '<i>P</i>(<i>A</i> | <i>B</i>) is the probability that given that a student has a Visa card, they also have a MasterCard.',
+      '<i>P</i>(<i>B</i> | <i>A</i>) is the probability that given that a student has a Visa card, they also have a MasterCard.'];
+    const html=`<p>Consider randomly selecting a student at a large university. Let <i>A</i> be the event that the selected student has a Visa card, let <i>B</i> be the analogous event for MasterCard, and let <i>C</i> be the event that the selected student has an American Express card. Suppose that</p>
+    <div class="given"><span><i>P</i>(<i>A</i>) = ${h2(A)}</span><span><i>P</i>(<i>B</i>) = ${h2(B)}</span><span><i>P</i>(<i>C</i>) = ${h2(C)}</span><span><i>P</i>(<i>A</i> &cap; <i>B</i>) = ${h2(AB)}</span><span><i>P</i>(<i>A</i> &cap; <i>C</i>) = ${h2(AC)}</span><span><i>P</i>(<i>B</i> &cap; <i>C</i>) = ${h2(BC)}</span><span><i>P</i>(<i>A</i> &cap; <i>B</i> &cap; <i>C</i>) = ${h2(T)}</span></div>
+    <p>Round to three decimal places where an answer is not exact.</p>
+    ${part('a',`<p>What is the probability that the selected student has at least one of the three types of cards?</p><div class="row">${c.num(U/100)}</div>`)}
+    ${part('b',`<p>What is the probability that the selected student has both a Visa card and a MasterCard but not an American Express card?</p><div class="row">${c.num((AB-T)/100)}</div>`)}
+    ${part('c',`<p>Calculate <i>P</i>(<i>B</i> | <i>A</i>) and <i>P</i>(<i>A</i> | <i>B</i>).</p><div class="row"><i>P</i>(<i>B</i> | <i>A</i>) = ${c.num(AB/A)}</div><div class="row"><i>P</i>(<i>A</i> | <i>B</i>) = ${c.num(AB/B)}</div>
+      <p>Interpret <i>P</i>(<i>B</i> | <i>A</i>) and <i>P</i>(<i>A</i> | <i>B</i>). (Select all that apply.)</p>${c.multi(opts,[3,5])}`)}
+    ${part('d',`<p>If we learn that the selected student has an American Express card, what is the probability that they also have both a Visa card and a MasterCard?</p><div class="row">${c.num(T/C)}</div>`)}
+    ${part('e',`<p>Given that the selected student has an American Express card, what is the probability that they have at least one of the other two types of cards?</p><div class="row">${c.num((AC+BC-T)/C)}</div>`)}`;
+    const sol=R`<p><b>(a)</b> Inclusion and exclusion for three events.</p>
+    $$P(A\cup B\cup C)=${h2(A)}+${h2(B)}+${h2(C)}-${h2(AB)}-${h2(AC)}-${h2(BC)}+${h2(T)}=${h2(U)}$$
+    <p><b>(b)</b> Take the Visa and MasterCard overlap and remove the part that also has American Express.</p>
+    $$P(A\cap B\cap C')=P(A\cap B)-P(A\cap B\cap C)=${h2(AB)}-${h2(T)}=${h2(AB-T)}$$
+    <p><b>(c)</b></p>
+    $$P(B\mid A)=\frac{P(A\cap B)}{P(A)}=\frac{${h2(AB)}}{${h2(A)}}=${fx(AB/A,3)}$$
+    $$P(A\mid B)=\frac{P(A\cap B)}{P(B)}=\frac{${h2(AB)}}{${h2(B)}}=${fx(AB/B,3)}$$
+    <p>\(P(B\mid A)\): given a Visa card, they also have a MasterCard. \(P(A\mid B)\): given a MasterCard, they also have a Visa card.</p>
+    <p><b>(d)</b></p>
+    $$P(A\cap B\mid C)=\frac{P(A\cap B\cap C)}{P(C)}=\frac{${h2(T)}}{${h2(C)}}=${fx(T/C,3)}$$
+    <p><b>(e)</b> Inside \(C\), use the addition rule on \(A\cap C\) and \(B\cap C\).</p>
+    $$P(A\cup B\mid C)=\frac{P(A\cap C)+P(B\cap C)-P(A\cap B\cap C)}{P(C)}=\frac{${h2(AC)}+${h2(BC)}-${h2(T)}}{${h2(C)}}=${fx((AC+BC-T)/C,3)}$$`;
+    return{html,sol}}},
+
+/* 3 */{title:'Three types of defects',ref:'§2.4, Exercise 48, p. 83',
+  orig:{t:1,p12:5,p13:2,p23:1,s1:3,s2:0,s3:2},
+  gen(){let s;do{s=[ri(0,4),ri(0,4),ri(0,4)]}while(s[0]+s[1]+s[2]===0);return{t:ri(1,2),p12:ri(1,5),p13:ri(1,4),p23:ri(1,4),s1:s[0],s2:s[1],s3:s[2]}},
+  build(p,c){const P1=p.s1+p.p12+p.p13+p.t,P2=p.s2+p.p12+p.p23+p.t,P3=p.s3+p.p13+p.p23+p.t,I12=p.p12+p.t,I13=p.p13+p.t,I23=p.p23+p.t;
+    const U12=P1+P2-I12,U13=P1+P3-I13,U23=P2+P3-I23,U=p.s1+p.s2+p.s3+p.p12+p.p13+p.p23+p.t,ONE=p.s1+p.s2+p.s3;
+    const a=i=>`<i>A</i><sub>${i}</sub>`;
+    const html=`<p>A certain system can experience three different types of defects. Let ${a('<i>i</i>')} (<i>i</i> = 1, 2, 3) denote the event that the system has a defect of type <i>i</i>. Suppose that the following probabilities are true.</p>
+    <div class="given"><span><i>P</i>(${a(1)}) = ${h2(P1)}</span><span><i>P</i>(${a(2)}) = ${h2(P2)}</span><span><i>P</i>(${a(3)}) = ${h2(P3)}</span></div>
+    <div class="given"><span><i>P</i>(${a(1)} &cup; ${a(2)}) = ${h2(U12)}</span><span><i>P</i>(${a(1)} &cup; ${a(3)}) = ${h2(U13)}</span><span><i>P</i>(${a(2)} &cup; ${a(3)}) = ${h2(U23)}</span></div>
+    <div class="given"><span><i>P</i>(${a(1)} &cap; ${a(2)} &cap; ${a(3)}) = ${h2(p.t)}</span></div>
+    <p>Round your answers to four decimal places.</p>
+    ${part('a',`<p>Given that the system has a type 1 defect, what is the probability that it has a type 2 defect?</p><div class="row">${c.num(I12/P1,4)}</div>`)}
+    ${part('b',`<p>Given that the system has a type 1 defect, what is the probability that it has all three types of defects?</p><div class="row">${c.num(p.t/P1,4)}</div>`)}
+    ${part('c',`<p>Given that the system has at least one type of defect, what is the probability that it has exactly one type of defect?</p><div class="row">${c.num(ONE/U,4)}</div>`)}
+    ${part('d',`<p>Given that the system has both of the first two types of defects, what is the probability that it does not have the third type of defect?</p><div class="row">${c.num(p.p12/I12,4)}</div>`)}`;
+    const sol=R`<p>First turn each union into an intersection with \(P(A_i\cap A_j)=P(A_i)+P(A_j)-P(A_i\cup A_j)\).</p>
+    $$P(A_1\cap A_2)=${h2(P1)}+${h2(P2)}-${h2(U12)}=${h2(I12)}$$
+    $$P(A_1\cap A_3)=${h2(P1)}+${h2(P3)}-${h2(U13)}=${h2(I13)}$$
+    $$P(A_2\cap A_3)=${h2(P2)}+${h2(P3)}-${h2(U23)}=${h2(I23)}$$
+    <p><b>(a)</b></p>
+    $$P(A_2\mid A_1)=\frac{${h2(I12)}}{${h2(P1)}}=${fx(I12/P1,4)}$$
+    <p><b>(b)</b> All three defects is already inside \(A_1\).</p>
+    $$P(A_1\cap A_2\cap A_3\mid A_1)=\frac{${h2(p.t)}}{${h2(P1)}}=${fx(p.t/P1,4)}$$
+    <p><b>(c)</b> At least one defect:</p>
+    $$P(A_1\cup A_2\cup A_3)=${h2(P1)}+${h2(P2)}+${h2(P3)}-${h2(I12)}-${h2(I13)}-${h2(I23)}+${h2(p.t)}=${h2(U)}$$
+    <p>Fill a Venn diagram from the centre outward. The regions with only one defect are ${h2(p.s1)} (type 1 only), ${h2(p.s2)} (type 2 only) and ${h2(p.s3)} (type 3 only).</p>
+    $$P(\text{exactly one}\mid\text{at least one})=\frac{${h2(ONE)}}{${h2(U)}}=${fx(ONE/U,4)}$$
+    <p><b>(d)</b></p>
+    $$P(A_3'\mid A_1\cap A_2)=\frac{P(A_1\cap A_2)-P(A_1\cap A_2\cap A_3)}{P(A_1\cap A_2)}=\frac{${h2(I12)}-${h2(p.t)}}{${h2(I12)}}=${fx(p.p12/I12,4)}$$`;
+    return{html,sol}}},
+
+/* 4 */{title:'Sport shirts sold',ref:'§2.4, Exercise 50, p. 83',
+  orig:{t:[[[4,2,5],[9,5,12],[3,7,8]],[[3,2,3],[10,6,7],[4,2,8]]],s1:1,p1:1,l1:1,l2:0,p2:0,s2:1,s3:1,p3:0},
+  gen(){const sw=[0.22,0.48,0.3],w=[];for(let l=0;l<2;l++)for(let s=0;s<3;s++)for(let q=0;q<3;q++)w.push(sw[s]*(l?0.9:1.1)*(0.5+Math.random()));
+    const v=scaleInt(w,100,1),t=[0,1].map(l=>[0,1,2].map(s=>v.slice(l*9+s*3,l*9+s*3+3)));
+    return{t,s1:ri(0,2),p1:ri(0,2),l1:ri(0,1),l2:ri(0,1),p2:ri(0,2),s2:ri(0,2),s3:ri(0,2),p3:ri(0,2)}},
+  build(p,c){const t=p.t,sum=a=>a.flat(2).reduce((x,y)=>x+y,0);
+    const SP=t[0][p.s1][p.p1]+t[1][p.s1][p.p1],SH=sum(t[0]),LG=sum(t[1]),SZT=sum(t[0][p.s1])+sum(t[1][p.s1]);
+    const PTT=[0,1].reduce((x,l)=>x+[0,1,2].reduce((y,s)=>y+t[l][s][p.p1],0),0);
+    const eD=t[p.l2][0][p.p2]+t[p.l2][1][p.p2]+t[p.l2][2][p.p2],eN=t[p.l2][p.s2][p.p2];
+    const f0=t[0][p.s3][p.p3],f1=t[1][p.s3][p.p3];
+    const tbl=l=>`<div class="tw"><table><caption>${l?'Long':'Short'}-sleeved</caption><tr><th>Size</th>${PT.map(x=>`<th>${x}</th>`).join('')}</tr>${t[l].map((r,i)=>`<tr><td>${SZ[i]}</td>${r.map(v=>`<td>${h2(v)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+    const an=w=>/^[aeiou]/.test(w)?'an':'a';
+    const html=`<p>A department store sells sport shirts in three sizes (small, medium, and large), three patterns (plaid, print, and stripe), and two sleeve lengths (long and short). The tables give the proportions of shirts sold in the various category combinations.</p>${tbl(0)}${tbl(1)}
+    ${part('a',`<p>What is the probability that the next shirt sold is a ${SIZE[p.s1]}, ${SLV[p.l1]}-sleeved, ${PAT[p.p1]} shirt?</p><div class="row">${c.num(t[p.l1][p.s1][p.p1]/100)}</div>`)}
+    ${part('b',`<p>What is the probability that the next shirt sold is a ${SIZE[p.s1]} ${PAT[p.p1]} shirt?</p><div class="row">${c.num(SP/100)}</div>`)}
+    ${part('c',`<p>What is the probability that the next shirt sold is a short-sleeved shirt? A long-sleeved shirt?</p><div class="row">short-sleeved ${c.num(SH/100)}</div><div class="row">long-sleeved ${c.num(LG/100)}</div>`)}
+    ${part('d',`<p>What is the probability that the size of the next shirt sold is ${SIZE[p.s1]}?</p><div class="row">${c.num(SZT/100)}</div><p>What is the probability that the pattern of the next shirt sold is ${an(PAT[p.p1])} ${PAT[p.p1]}?</p><div class="row">${c.num(PTT/100)}</div>`)}
+    ${part('e',`<p>Given that the shirt just sold was a ${SLV[p.l2]}-sleeved ${PAT[p.p2]}, what is the probability that its size was ${SIZE[p.s2]}? (Three decimal places.)</p><div class="row">${c.num(eN/eD,3)}</div>`)}
+    ${part('f',`<p>Given that the shirt just sold was a ${SIZE[p.s3]} ${PAT[p.p3]}, what is the probability that it was short-sleeved? Long-sleeved? (Three decimal places.)</p><div class="row">short-sleeved ${c.num(f0/(f0+f1),3)}</div><div class="row">long-sleeved ${c.num(f1/(f0+f1),3)}</div>`)}`;
+    const sol=R`<p><b>(a)</b> One cell: ${SLV[p.l1]}-sleeved table, row ${SZ[p.s1]}, column ${PT[p.p1]}, which is <span class="ans">${h2(t[p.l1][p.s1][p.p1])}</span>.</p>
+    <p><b>(b)</b> Sleeve length is not specified, so add the same cell from both tables.</p>
+    $$${h2(t[0][p.s1][p.p1])}+${h2(t[1][p.s1][p.p1])}=${h2(SP)}$$
+    <p><b>(c)</b> Add all nine cells of each table: short-sleeved <span class="ans">${h2(SH)}</span>, long-sleeved <span class="ans">${h2(LG)}</span>.</p>
+    <p><b>(d)</b> Add the ${SZ[p.s1]} row across both tables, then the ${PT[p.p1]} column across both tables.</p>
+    $$P(\text{${SIZE[p.s1]}})=${t[0][p.s1].concat(t[1][p.s1]).map(h2).join('+')}=${h2(SZT)}$$
+    $$P(\text{${PAT[p.p1]}})=${[0,1].flatMap(l=>[0,1,2].map(s=>h2(t[l][s][p.p1]))).join('+')}=${h2(PTT)}$$
+    <p><b>(e)</b> The condition is the ${PT[p.p2]} column of the ${SLV[p.l2]}-sleeved table.</p>
+    $$P(\text{${SIZE[p.s2]}}\mid\text{${SLV[p.l2]}-sleeved ${PAT[p.p2]}})=\frac{${h2(eN)}}{${[0,1,2].map(s=>h2(t[p.l2][s][p.p2])).join('+')}}=\frac{${h2(eN)}}{${h2(eD)}}=${fx(eN/eD,3)}$$
+    <p><b>(f)</b> The condition is the ${SIZE[p.s3]} ${PAT[p.p3]} cell from both tables.</p>
+    $$P(\text{short}\mid\text{${SIZE[p.s3]} ${PAT[p.p3]}})=\frac{${h2(f0)}}{${h2(f0)}+${h2(f1)}}=${fx(f0/(f0+f1),3)}$$
+    $$P(\text{long}\mid\text{${SIZE[p.s3]} ${PAT[p.p3]}})=\frac{${h2(f1)}}{${h2(f0+f1)}}=${fx(f1/(f0+f1),3)}$$`;
+    return{html,sol}}},
+
+/* 5 */{title:'Proof with a conditional inequality',ref:'§2.4, Exercise 57, p. 84',
+  orig:{X:'A',Y:'B',gt:true},
+  gen(){const [X,Y]=pick([['A','B'],['B','A'],['E','F'],['C','D']]);return{X,Y,gt:Math.random()<0.5}},
+  build(p,c){const {X,Y}=p,s=p.gt?'&gt;':'&lt;',o=p.gt?'&lt;':'&gt;';
+    const Pc=`<i>P</i>(<i>${Y}</i> | <i>${X}</i>)`,Pn=`<i>P</i>(<i>${Y}</i>&prime; | <i>${X}</i>)`,PY=`<i>P</i>(<i>${Y}</i>)`,PYn=`<i>P</i>(<i>${Y}</i>&prime;)`;
+    const O=['0','1',`P(${Y})`,`P(${Y}′)`,`1 − P(${Y})`,`1 − P(${Y}′)`,`P(${X})`,`P(${Y} | ${X})`,`P(${X} ∩ ${Y})`];
+    const html=`<p>If ${Pc} ${s} ${PY}, show that ${Pn} ${o} ${PYn}. [<i>Hint:</i> Add ${Pn} to both sides of the given inequality and then use the fact that ${Pc} + ${Pn} = 1.]</p>
+    <div class="proof">
+      <span class="l">${Pc} + ${Pn}</span><span>${s}</span><span>${PY} + ${Pn}</span>
+      <span class="l">${c.sel(O,1)}</span><span>${s}</span><span>${PY} + ${Pn}</span>
+      <span class="l">${c.sel(O,4)}</span><span>${s}</span><span>${Pn}</span>
+      <span class="l">${c.sel(O,3)}</span><span>${s}</span><span>${Pn}</span>
+      <span class="l">${Pn}</span><span>${c.sel(['&lt;','&gt;','='],p.gt?0:1)}</span><span>${c.sel(O,3)}</span>
+    </div>`;
+    const g=p.gt?R`\gt`:R`\lt`,og=p.gt?R`\lt`:R`\gt`;
+    const sol=R`<p>Add \(P(${Y}'\mid ${X})\) to both sides of the given inequality.</p>
+    $$P(${Y}\mid ${X})+P(${Y}'\mid ${X})${g}P(${Y})+P(${Y}'\mid ${X})$$
+    <p>Given \(${X}\), either \(${Y}\) happens or it does not, so the left side is 1.</p>
+    $$1${g}P(${Y})+P(${Y}'\mid ${X})$$
+    <p>Subtract \(P(${Y})\) from both sides.</p>
+    $$1-P(${Y})${g}P(${Y}'\mid ${X})$$
+    <p>By the complement rule, \(1-P(${Y})=P(${Y}')\).</p>
+    $$P(${Y}')${g}P(${Y}'\mid ${X})$$
+    <p>Read it from right to left.</p>
+    $$P(${Y}'\mid ${X})${og}P(${Y}')$$`;
+    return{html,sol}}},
+
+/* 6 */{title:'System of four components',ref:'§2.5, Exercise 80, p. 90',
+  orig:{a:81,b:61},
+  gen(){return{a:ri(70,96),b:ri(52,92)}},
+  build(p,c){const a=p.a/100,b=p.b/100,par=1-(1-a)**2,ser=b*b,ans=1-(1-par)*(1-ser);
+    const box=(x,y,n)=>`<rect x="${x}" y="${y-16}" width="56" height="32" rx="3" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/><text x="${x+28}" y="${y+5}" text-anchor="middle" font-size="15" fill="currentColor">${n}</text>`;
+    const fig=`<figure><svg viewBox="0 0 380 210" width="380" role="img" aria-label="Components 1 and 2 in parallel form the top branch. Components 3 and 4 in series form the bottom branch. The two branches are in parallel." style="color:var(--ink)">
+      <g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 115H44M44 55V175M44 55H96M96 22V88M96 22H150M206 22H260M96 88H150M206 88H260M260 22V88M260 55H336M44 175H100M156 175H204M260 175H336M336 55V175M336 115H374"/></g>
+      ${box(150,22,1)}${box(150,88,2)}${box(100,175,3)}${box(204,175,4)}</svg></figure>`;
+    const html=`<p>Consider the system of components connected as in the following figure.</p>${fig}
+    <p>Components 1 and 2 are connected in parallel, so that subsystem works if and only if either 1 or 2 works; since 3 and 4 are connected in series, that subsystem works if and only if both 3 and 4 work. If components work independently of one another and <i>P</i>(component <i>i</i> works) = ${h2(p.a)} for <i>i</i> = 1, 2 and = ${h2(p.b)} for <i>i</i> = 3, 4, calculate <i>P</i>(system works). (Round your answer to four decimal places.)</p><div class="row">${c.num(ans,4)}</div>`;
+    const sol=R`<p>The top branch (1 and 2 in parallel) fails only when both fail.</p>
+    $$P(1\cup 2)=1-(1-${h2(p.a)})^2=1-${fx((1-a)**2,4)}=${fx(par,4)}$$
+    <p>The bottom branch (3 and 4 in series) needs both.</p>
+    $$P(3\cap 4)=(${h2(p.b)})^2=${fx(ser,4)}$$
+    <p>The two branches are themselves in parallel, so the system fails only when both branches fail.</p>
+    $$P(\text{system works})=1-(1-${fx(par,4)})(1-${fx(ser,4)})=1-(${fx(1-par,4)})(${fx(1-ser,4)})=${fx(ans,4)}$$`;
+    return{html,sol}}},
+
+/* 7 */{title:'Two dice: pairwise and mutual independence',ref:'§2.5, Exercise 82, p. 90',
+  orig:{r:3,g:4,kind:'sum',s:7},
+  gen(){const u=Math.random();return{r:ri(1,6),g:ri(1,6),kind:u<0.7?'sum':(u<0.85?'even':'odd'),s:Math.random()<0.45?7:pick([4,5,6,8,9,10])}},
+  build(p,c){const inC=(x,y)=>p.kind==='sum'?x+y===p.s:(p.kind==='even'?(x+y)%2===0:(x+y)%2===1);
+    let nC=0,nAC=0,nBC=0,nABC=0;for(let x=1;x<=6;x++)for(let y=1;y<=6;y++)if(inC(x,y)){nC++;if(x===p.r)nAC++;if(y===p.g)nBC++;if(x===p.r&&y===p.g)nABC++}
+    const iAC=nAC*36===6*nC,iBC=nBC*36===6*nC,dep=(iAC?0:1)+(iBC?0:1),mutual=dep===0&&nABC*1296===36*nC;
+    const cText=p.kind==='sum'?`is ${p.s}`:`is ${p.kind}`;
+    const html=`<p>Consider independently rolling two fair dice, one red and the other green. Let <i>A</i> be the event that the red die shows ${p.r} dot${p.r>1?'s':''}, <i>B</i> be the event that the green die shows ${p.g} dot${p.g>1?'s':''}, and <i>C</i> be the event that the total number of dots showing on the two dice ${cText}. Are these events pairwise independent (i.e., are <i>A</i> and <i>B</i> independent events, are <i>A</i> and <i>C</i> independent, and are <i>B</i> and <i>C</i> independent)?</p>
+    ${c.radio(['Yes, the events are pairwise independent.','No, one pair is not independent.','No, two pairs are not independent.','No, none of the pairs are independent.'],dep)}
+    <p>Are the three events mutually independent?</p>
+    ${c.radio(['Yes, the three events are mutually independent.','No, the three events are not mutually independent.'],mutual?0:1)}`;
+    const v=(ok)=>ok?R`\text{equal, so independent}`:R`\text{not equal, so not independent}`;
+    const sol=R`<p>There are 36 equally likely outcomes. \(P(A)=\tfrac16\), \(P(B)=\tfrac16\), and \(C\) contains ${nC} outcomes, so \(P(C)=${frac(nC,36)}\).</p>
+    <p><b>A and B</b></p>
+    $$P(A\cap B)=\tfrac{1}{36}\qquad P(A)P(B)=\tfrac{1}{36}\qquad ${v(true)}$$
+    <p><b>A and C</b> (red is ${p.r} and the total ${cText}: ${nAC} outcome${nAC===1?'':'s'})</p>
+    $$P(A\cap C)=${frac(nAC,36)}\qquad P(A)P(C)=${frac(nC,216)}\qquad ${v(iAC)}$$
+    <p><b>B and C</b> (green is ${p.g} and the total ${cText}: ${nBC} outcome${nBC===1?'':'s'})</p>
+    $$P(B\cap C)=${frac(nBC,36)}\qquad P(B)P(C)=${frac(nC,216)}\qquad ${v(iBC)}$$
+    <p>${dep===0?'All three pairs pass, so the events are pairwise independent.':`${dep===1?'One pair fails':'Two pairs fail'}, so the events are not pairwise independent.`}</p>
+    <p><b>Mutual independence</b> also needs \(P(A\cap B\cap C)=P(A)P(B)P(C)\). The outcome (red ${p.r}, green ${p.g}) has total ${p.r+p.g}, which ${nABC?'is':'is not'} in \(C\).</p>
+    $$P(A\cap B\cap C)=${frac(nABC,36)}\qquad P(A)P(B)P(C)=${frac(nC,1296)}$$
+    <p>${dep===0?'These are not equal, so the three events are <b>not</b> mutually independent even though every pair is. Knowing two of the events settles the third.':'These are not equal, and the events are not even pairwise independent, so they are <b>not</b> mutually independent.'}</p>`;
+    return{html,sol}}},
+
+/* 8 */{title:'Control chart false signals',ref:'§2.5, Exercise 75, p. 89',
+  orig:{p:7,n1:10,n2:30},
+  gen(){return{p:ri(1,10),n1:pick([5,8,10,12,15]),n2:pick([20,25,30,40,50])}},
+  build(p,c){const q=1-p.p/100,a1=1-q**p.n1,a2=1-q**p.n2;
+    const html=`<p>One of the assumptions underlying the theory of control charting is that successive plotted points are independent of one another. Each plotted point can signal either that a manufacturing process is operating correctly or that there is some sort of malfunction. Even when a process is running correctly, there is a small probability that a particular point will signal a problem with the process. Suppose that this probability is ${h2(p.p)}. What is the probability that at least one of ${p.n1} successive points indicates a problem when in fact the process is operating correctly? (Round your answer to three decimal places.)</p><div class="row">${c.num(a1,3)}</div>
+    <p>What is the probability that at least one of ${p.n2} successive points indicates a problem when in fact the process is operating correctly? (Round your answer to three decimal places.)</p><div class="row">${c.num(a2,3)}</div>`;
+    const sol=R`<p>"At least one" is the complement of "none". Each point gives no signal with probability \(1-${h2(p.p)}=${h2(100-p.p)}\), and the points are independent, so multiply.</p>
+    $$P(\text{at least one of ${p.n1}})=1-(${h2(100-p.p)})^{${p.n1}}=1-${fx(q**p.n1,4)}=${fx(a1,3)}$$
+    $$P(\text{at least one of ${p.n2}})=1-(${h2(100-p.p)})^{${p.n2}}=1-${fx(q**p.n2,4)}=${fx(a2,3)}$$`;
+    return{html,sol}}},
+
+/* 9 */{title:'Two independent oil projects',ref:'§2.5, Exercise 71, p. 89',
+  orig:{a:50,b:30,only:0},
+  gen(){return{a:5*ri(4,16),b:5*ri(4,16),only:ri(0,1)}},
+  build(p,c){const a=p.a/100,b=p.b/100,u=1-(1-a)*(1-b),n=p.only?(1-a)*b:a*(1-b),who=p.only?'European':'Asian';
+    const html=`<p>An oil exploration company currently has two active projects, one in Asia and the other in Europe. Let <i>A</i> be the event that the Asian project is successful and <i>B</i> be the event that the European project is successful. Suppose that <i>A</i> and <i>B</i> are independent events with <i>P</i>(<i>A</i>) = ${tr(a)} and <i>P</i>(<i>B</i>) = ${tr(b)}.</p>
+    ${part('a',`<p>If the Asian project is not successful, what is the probability that the European project is also not successful?</p><div class="row">${c.num(1-b)}</div><p>Explain your reasoning.</p>
+      ${c.radio(['Since the events are independent, then <i>A</i>&prime; and <i>B</i>&prime; are not independent.','Since the events are independent, then <i>A</i>&prime; and <i>B</i>&prime; are mutually exclusive.','Since the events are not independent, then <i>A</i>&prime; and <i>B</i>&prime; are mutually exclusive.','Since the events are independent, then <i>A</i>&prime; and <i>B</i>&prime; are independent.'],3,true)}`)}
+    ${part('b',`<p>What is the probability that at least one of the two projects will be successful?</p><div class="row">${c.num(u)}</div>`)}
+    ${part('c',`<p>Given that at least one of the two projects is successful, what is the probability that only the ${who} project is successful? (Round your answer to three decimal places.)</p><div class="row">${c.num(n/u,3)}</div>`)}`;
+    const sol=R`<p><b>(a)</b> If \(A\) and \(B\) are independent, so are \(A'\) and \(B'\). Knowing \(A'\) happened changes nothing.</p>
+    $$P(B'\mid A')=P(B')=1-${tr(b)}=${tr(1-b)}$$
+    <p><b>(b)</b> Use the complement: neither succeeds with probability \(P(A')P(B')\).</p>
+    $$P(A\cup B)=1-(${tr(1-a)})(${tr(1-b)})=${tr(u)}$$
+    <p><b>(c)</b> "Only the ${who} project" is \(${p.only?R`A'\cap B`:R`A\cap B'`}\), which is already inside \(A\cup B\).</p>
+    $$P(${p.only?R`A'\cap B`:R`A\cap B'`})=(${tr(p.only?1-a:a)})(${tr(p.only?b:1-b)})=${tr(n)}$$
+    $$P(\text{only ${who}}\mid A\cup B)=\frac{${tr(n)}}{${tr(u)}}=${fx(n/u,3)}$$`;
+    return{html,sol}}},
+
+/* 10 */{title:'Rivets in an aircraft seam',ref:'§2.5, Exercise 77, p. 89',
+  orig:{n:28,r1:19,r2:8},
+  gen(){return{n:ri(18,40),r1:ri(11,26),r2:ri(3,9)}},
+  build(p,c){const f=r=>1-(1-r/100)**(1/p.n);
+    const html=`<p>An aircraft seam requires ${p.n} rivets. The seam will have to be reworked if any of these rivets is defective. Suppose rivets are defective independently of one another, each with the same probability. (Round your answers to four decimal places.)</p>
+    ${part('a',`<p>If ${p.r1}% of all seams need reworking, what is the probability that a rivet is defective?</p><div class="row">${c.num(f(p.r1),4)}</div>`)}
+    ${part('b',`<p>How small should the probability of a defective rivet be to ensure that only ${p.r2}% of all seams need reworking?</p><div class="row">${c.num(f(p.r2),4)}</div>`)}`;
+    const sol=R`<p>Let \(p\) be the probability that one rivet is defective. A seam avoids rework only if all ${p.n} rivets are good.</p>
+    $$P(\text{no rework})=(1-p)^{${p.n}}$$
+    <p><b>(a)</b> ${p.r1}% need rework, so ${100-p.r1}% do not.</p>
+    $$(1-p)^{${p.n}}=${h2(100-p.r1)}$$
+    $$p=1-(${h2(100-p.r1)})^{1/${p.n}}=${fx(f(p.r1),4)}$$
+    <p><b>(b)</b> Same equation with ${h2(100-p.r2)}.</p>
+    $$p=1-(${h2(100-p.r2)})^{1/${p.n}}=${fx(f(p.r2),4)}$$`;
+    return{html,sol}}},
+
+/* 11 */{title:'Two pumps in parallel',ref:'§2.5, Exercise 79, p. 89',
+  orig:{a:27,b:10},
+  gen(){return{a:ri(10,30),b:ri(5,20)}},
+  build(p,c){const a=p.a/100,b=p.b/100,m=1-a-b,ab=a*b,d=Math.sqrt(m*m-4*ab),lo=(m-d)/2,hi=(m+d)/2;
+    const fig=`<figure><svg viewBox="0 0 320 170" width="320" role="img" aria-label="Venn diagram: only A is ${h2(p.a)}, only B is ${h2(p.b)}, overlap is x" style="color:var(--ink)">
+      <circle cx="120" cy="88" r="68" fill="var(--accent)" fill-opacity=".12" stroke="currentColor" stroke-width="1.5"/><circle cx="200" cy="88" r="68" fill="var(--accent)" fill-opacity=".12" stroke="currentColor" stroke-width="1.5"/>
+      <g fill="currentColor" font-size="15" text-anchor="middle"><text x="92" y="93">${h2(p.a)}</text><text x="228" y="93">${h2(p.b)}</text><text x="160" y="93" font-style="italic">x</text><text x="70" y="18">A</text><text x="250" y="18">B</text></g></svg></figure>`;
+    const html=`<p>Two pumps connected in parallel fail independently of one another on any given day. The probability that only the older pump will fail is ${h2(p.a)}, and the probability that only the newer pump will fail is ${h2(p.b)}. What is the probability that the pumping system will fail on any given day (which happens if both pumps fail)?</p>
+    <p><b>Step 1.</b> Let <i>A</i> = {older pump fails} and <i>B</i> = {newer pump fails}. Define the probability of both pumps failing, <i>P</i>(<i>A</i> &cap; <i>B</i>), to be <i>x</i>.</p>${fig}
+    <p>The probability of each pump failing is the probability that only that pump fails plus the probability that both fail.</p>
+    <div class="row"><i>P</i>(<i>A</i>) = ${h2(p.a)} + <i>x</i> &nbsp;and&nbsp; <i>P</i>(<i>B</i>) = ${c.num(b)} + <i>x</i></div>
+    <p>Because <i>A</i> and <i>B</i> are independent, <i>P</i>(<i>A</i> &cap; <i>B</i>) = <i>P</i>(<i>A</i>) &middot; <i>P</i>(<i>B</i>). Expand the product.</p>
+    <div class="row">(${h2(p.a)} + <i>x</i>)(${h2(p.b)} + <i>x</i>) = <i>x</i><sup>2</sup> + ${c.num(a+b)} <i>x</i> + ${tr(ab)}</div>
+    <p><b>Step 2.</b> Set this equal to <i>x</i> and move everything to one side.</p>
+    <div class="row">0 = <i>x</i><sup>2</sup> &minus; ${c.num(m)} <i>x</i> + ${tr(ab)}</div>
+    <p>Solve the quadratic. Round both values to four decimal places.</p>
+    <div class="row">lower value: <i>x</i> = ${c.num(lo,4)}</div><div class="row">larger value: <i>x</i> = ${c.num(hi,4)}</div>`;
+    const sol=R`<p>With \(x=P(A\cap B)\), the Venn diagram gives</p>
+    $$P(A)=${h2(p.a)}+x$$
+    $$P(B)=${h2(p.b)}+x$$
+    <p>Independence gives \(x=P(A)\,P(B)\).</p>
+    $$x=(${h2(p.a)}+x)(${h2(p.b)}+x)=x^2+${tr(a+b)}x+${tr(ab)}$$
+    <p>Subtract \(x\) from both sides.</p>
+    $$0=x^2-${tr(m)}x+${tr(ab)}$$
+    <p>Quadratic formula:</p>
+    $$x=\frac{${tr(m)}\pm\sqrt{(${tr(m)})^2-4(${tr(ab)})}}{2}=\frac{${tr(m)}\pm${fx(d,4)}}{2}$$
+    $$x=${fx(lo,4)}\quad\text{or}\quad x=${fx(hi,4)}$$`;
+    return{html,sol}}},
+
+/* 12 */{title:'Missing aircraft and locators',ref:'§2.4, Exercise 60, p. 84',
+  orig:{d:77,l:66,m:80},
+  gen(){return{d:ri(60,88),l:ri(50,78),m:ri(70,95)}},
+  build(p,c){const d=p.d/100,l=p.l/100,m=p.m/100,DL=d*l,NL=(1-d)*(1-m),DN=d*(1-l),NN=(1-d)*m;
+    const html=`<p>${p.d}% of the light aircraft that disappear while in flight in a certain country are subsequently discovered. Of the aircraft that are discovered, ${p.l}% have an emergency locator, whereas ${p.m}% of the aircraft not discovered do not have such a locator. Suppose a light aircraft has disappeared. (Round your answers to three decimal places.)</p>
+    ${part('a',`<p>If it has an emergency locator, what is the probability that it will not be discovered?</p><div class="row">${c.num(NL/(NL+DL),3)}</div>`)}
+    ${part('b',`<p>If it does not have an emergency locator, what is the probability that it will be discovered?</p><div class="row">${c.num(DN/(DN+NN),3)}</div>`)}`;
+    const sol=R`<p>Let \(D\) = discovered and \(L\) = has a locator. Build the tree.</p>
+    $$P(D)=${h2(p.d)}\qquad P(D')=${h2(100-p.d)}$$
+    $$P(L\mid D)=${h2(p.l)}\qquad P(L'\mid D)=${h2(100-p.l)}$$
+    $$P(L'\mid D')=${h2(p.m)}\qquad P(L\mid D')=${h2(100-p.m)}$$
+    <p>Multiply along each branch.</p>
+    $$P(D\cap L)=${tr(DL)}\qquad P(D'\cap L)=${tr(NL)}$$
+    $$P(D\cap L')=${tr(DN)}\qquad P(D'\cap L')=${tr(NN)}$$
+    <p><b>(a)</b> Bayes' theorem, conditioning on \(L\).</p>
+    $$P(D'\mid L)=\frac{P(D'\cap L)}{P(D\cap L)+P(D'\cap L)}=\frac{${tr(NL)}}{${tr(DL)}+${tr(NL)}}=${fx(NL/(NL+DL),3)}$$
+    <p><b>(b)</b> Conditioning on \(L'\).</p>
+    $$P(D\mid L')=\frac{P(D\cap L')}{P(D\cap L')+P(D'\cap L')}=\frac{${tr(DN)}}{${tr(DN)}+${tr(NN)}}=${fx(DN/(DN+NN),3)}$$`;
+    return{html,sol}}},
+
+/* 13 */{title:'Blue cab, green cab',ref:'§2.4, Exercise 62, p. 84',
+  orig:{b:15,k:80,said:0},
+  gen(){return{b:ri(10,35),k:5*ri(13,19),said:ri(0,1)}},
+  build(p,c){const col=['blue','green'],Col=['Blue','Green'],s=p.said,share=[p.b/100,1-p.b/100],k=p.k/100;
+    const right=share[s]*k,wrong=share[1-s]*(1-k),ans=right/(right+wrong);
+    const html=`<p>Blue Cab operates ${p.b}% of the taxis in a certain city, and Green Cab operates the other ${100-p.b}%. After a nighttime hit-and-run accident involving a taxi, an eyewitness said the vehicle was ${col[s]}. Suppose, though, that under night vision conditions, only ${p.k}% of individuals can correctly distinguish between a blue and a green vehicle. What is the (posterior) probability that the taxi at fault was ${col[s]}? [<i>Hint:</i> A tree diagram might help.] (Round your answer to four decimal places.)</p><div class="row">${c.num(ans,4)}</div>
+    <p>Indicate the probability rule you used.</p>
+    ${c.radio(["Bayes' Theorem",'The Product Rule for <i>k</i>-Tuples','The Division Rule','The Rule of Permutations','The Product Rule for Ordered Pairs'],0,true)}`;
+    const T=Col[s][0],F=Col[1-s][0];
+    const sol=R`<p>Let \(${T}\) = taxi was ${col[s]}, \(${F}\) = taxi was ${col[1-s]}, and \(W\) = witness says "${col[s]}". The witness is right ${p.k}% of the time whichever colour it was.</p>
+    $$P(${T})=${h2(s?100-p.b:p.b)}\qquad P(W\mid ${T})=${h2(p.k)}$$
+    $$P(${F})=${h2(s?p.b:100-p.b)}\qquad P(W\mid ${F})=${h2(100-p.k)}$$
+    <p>Bayes' theorem:</p>
+    $$P(${T}\mid W)=\frac{P(${T})\,P(W\mid ${T})}{P(${T})\,P(W\mid ${T})+P(${F})\,P(W\mid ${F})}$$
+    $$P(${T}\mid W)=\frac{(${tr(share[s])})(${h2(p.k)})}{(${tr(share[s])})(${h2(p.k)})+(${tr(share[1-s])})(${h2(100-p.k)})}=\frac{${tr(right)}}{${tr(right)}+${tr(wrong)}}=${fx(ans,4)}$$`;
+    return{html,sol}}}
+];
+/*LOGIC-END*/
+
+if(typeof document!=='undefined'){
+  const main=document.getElementById('main'),strip=document.getElementById('strip'),tally=document.getElementById('tally');
+  let solved={};try{solved=JSON.parse(localStorage.getItem('a4practice')||'{}')||{}}catch(e){solved={}}
+  const save=()=>{try{localStorage.setItem('a4practice',JSON.stringify(solved))}catch(e){}};
+  const S=QS.map(()=>({}));
+  const el=(i,k)=>document.getElementById(`q${i+1}-${k}`);
+  function showTally(){const n=Object.values(solved).reduce((a,b)=>a+b,0);tally.textContent=n?`${n} version${n===1?'':'s'} solved on this device`:'';
+    if(window.Site)Site.report({done:QS.filter((q,i)=>(solved['q'+(i+1)]||0)>0).length,total:QS.length})}
+  function count(i){const n=solved['q'+(i+1)]||0;document.getElementById(`cnt${i}`).textContent=n?`solved ×${n}`:''}
+  function parse(s){s=s.trim().replace(',','.');if(!s)return null;
+    if(/^[-+]?\d*\.?\d+\s*\/\s*\d*\.?\d+$/.test(s)){const [a,b]=s.split('/');return a/b}
+    const v=Number(s);return isFinite(v)?v:NaN}
+  function render(i,params){const q=QS[i],st=S[i],c=ctx('q'+(i+1)),out=q.build(params,c);
+    st.parts=c.parts;st.sol=out.sol;st.credited=false;
+    document.getElementById(`body${i}`).innerHTML=out.html;
+    const sol=document.getElementById(`sol${i}`);sol.hidden=true;sol.innerHTML='';
+    document.getElementById(`solbtn${i}`).textContent='Show solution';
+    const status=document.getElementById(`status${i}`);status.textContent='';status.dataset.s='';
+    strip.children[i].dataset.s='';}
+  function check(i){const st=S[i];let ok=0,blank=0;
+    st.parts.forEach((p,k)=>{const e=el(i,k);let r,w;
+      if(p.t==='num'){const v=parse(e.value);r=v===null?null:Math.abs(v-p.ans)<=p.tol+1e-9;w=e.parentElement}
+      else if(p.t==='sel'){r=e.value===''?null:+e.value===p.ans;w=e.parentElement}
+      else if(p.t==='radio'){const ch=e.querySelector('input:checked');r=ch?+ch.value===p.ans:null;w=e}
+      else{const v=[...e.querySelectorAll('input:checked')].map(x=>+x.value).sort();r=v.length?v.join()===p.ans.slice().sort().join():null;w=e}
+      w.dataset.r=r===null?'':(r?'ok':'no');if(r)ok++;if(r===null)blank++});
+    const n=st.parts.length,all=ok===n,status=document.getElementById(`status${i}`);
+    status.textContent=all?'All correct. Try new numbers.':`${ok} of ${n} correct${blank?`, ${blank} blank`:''}`;
+    status.dataset.s=all?'ok':'part';strip.children[i].dataset.s=all?'ok':'part';
+    if(all&&!st.credited){st.credited=true;const key='q'+(i+1);solved[key]=(solved[key]||0)+1;save();count(i);showTally()}}
+  function toggleSol(i){const sol=document.getElementById(`sol${i}`),btn=document.getElementById(`solbtn${i}`);
+    if(sol.hidden){sol.innerHTML='<h3>Worked solution</h3>'+S[i].sol;sol.hidden=false;btn.textContent='Hide solution';
+      if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([sol]).catch(()=>{})}
+    else{sol.hidden=true;btn.textContent='Show solution'}}
+  QS.forEach((q,i)=>{
+    const a=document.createElement('a');a.href=`#q${i+1}`;a.textContent=i+1;a.setAttribute('aria-label',`Question ${i+1}: ${q.title}`);strip.appendChild(a);
+    const s=document.createElement('section');s.className='q';s.id=`q${i+1}`;
+    s.innerHTML=`<div class="qhead"><span class="qnum">${i+1}</span><span class="qtitle">${q.title}</span><span class="qref">Devore ${q.ref} <span id="cnt${i}"></span></span></div>
+      <div class="qbody" id="body${i}"></div>
+      <div class="actions"><button class="primary" id="chk${i}">Check answers</button><button id="new${i}">New numbers</button><button id="solbtn${i}">Show solution</button><button class="quiet" id="orig${i}">Assignment numbers</button><span class="status" id="status${i}" role="status"></span></div>
+      <div class="sol" id="sol${i}" hidden></div>`;
+    main.appendChild(s);
+    document.getElementById(`chk${i}`).onclick=()=>check(i);
+    document.getElementById(`new${i}`).onclick=()=>render(i,q.gen());
+    document.getElementById(`orig${i}`).onclick=()=>render(i,q.orig);
+    document.getElementById(`solbtn${i}`).onclick=()=>toggleSol(i);
+    s.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('input[type=text]'))check(i)});
+    s.addEventListener('input',e=>{const w=e.target.closest('.f,.opts');if(w)w.dataset.r=''});
+    render(i,q.orig);count(i)});
+  document.getElementById('allNew').onclick=()=>QS.forEach((q,i)=>render(i,q.gen()));
+  document.getElementById('allOrig').onclick=()=>QS.forEach((q,i)=>render(i,q.orig));
+  showTally();
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Formula sheet</title>
+<!-- The home page builds this page's card from the block below. -->
+<script type="application/json" id="site-card">
+{"num": "Ref", "title": "Formula sheet", "text": "Every definition and formula from Sections 1.1 to 3.3 with its textbook page, the short proofs worth knowing, and links to the questions that use each one.", "meta": ["§1.1–3.3", "7 short proofs"]}
+</script>
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<style>
+/* Layout: one column. Each textbook section is a block of rows; a row is name + page on the
+   left and the formula on the right, with links to the practice questions that use it. */
+*{box-sizing:border-box}
+body{font-size:16px;line-height:1.55}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:36px 40px}
+.where{font-size:.9rem;color:var(--muted);margin:0 0 6px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,5vw,2.6rem);line-height:1.1;margin:0 0 10px}
+.lede{color:var(--muted);max-width:64ch;margin:0}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.toc a{display:block;font-family:var(--mono);font-size:.85rem;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:5px;background:var(--surface);padding:6px 10px}
+.toc a:hover{border-color:var(--accent);color:var(--accent)}
+.toc a.pf{font-family:var(--sans)}
+section{scroll-margin-top:12px}
+h2{font-family:var(--serif);font-weight:600;font-size:1.45rem;line-height:1.2;margin:48px 0 2px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+h2 .sec{font-family:var(--mono);font-weight:500;font-size:1.05rem;color:var(--accent)}
+h2 small{font-family:var(--mono);font-weight:400;font-size:.8rem;color:var(--muted);margin-left:auto}
+.rows{margin:12px 0 0;border-top:1px solid var(--line)}
+.r{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:4px 24px;padding:14px 4px;border-bottom:1px solid var(--line)}
+.r dt{font-weight:600;margin:0}
+.r dt small{display:block;font-family:var(--mono);font-weight:400;font-size:.78rem;color:var(--muted);margin-top:2px}
+.r dd{margin:0;font-family:var(--serif);font-size:1.06rem;line-height:1.55;min-width:0}
+.r dd p{margin:0 0 6px}
+.r dd p:last-child{margin-bottom:0}
+.use{font-family:var(--sans);font-size:.85rem;color:var(--muted)}
+.use a,.test a,.proof a{color:var(--accent)}
+.test{margin:14px 0 0;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:4px;font-size:.95rem}
+.test b{font-weight:600}
+.proof{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px clamp(14px,3vw,22px);margin:14px 0 0;scroll-margin-top:12px}
+.proof h3{font-family:var(--serif);font-weight:600;font-size:1.15rem;margin:0 0 2px}
+.proof .src{font-family:var(--mono);font-size:.78rem;color:var(--muted);margin:0 0 10px}
+.proof p{font-family:var(--serif);font-size:1.04rem;margin:0 0 6px}
+.proof .why{font-family:var(--sans);font-size:.88rem;color:var(--muted)}
+mjx-container{max-width:100%}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;margin:.5em 0 !important}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:640px){.r{grid-template-columns:minmax(0,1fr)}h2 small{margin-left:0;flex-basis:100%}}
+@media print{.toc{display:none}h2{margin-top:24px}.r,.proof{break-inside:avoid}}
+</style>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]},svg:{fontCache:'global'},options:{enableMenu:false}};</script>
+<script async src="tex-svg.js"></script>
+<style id="site-zoom">@media (min-width:900px){html{zoom:0.8}}</style></head>
+<body>
+<main class="wrap">
+  <p class="where">Devore 9e, Sections 1.1 to 3.3</p>
+  <h1>Formula sheet</h1>
+  <p class="lede">Every definition and formula the practice sets use, in textbook order, with the page it comes from in Devore and the practice questions that use it. The short proofs are collected at the end.</p>
+  <ul class="toc" aria-label="Jump to a section">
+    <li><a href="#s1-1">1.1–1.2</a></li><li><a href="#s1-3">1.3</a></li><li><a href="#s1-4">1.4</a></li>
+    <li><a href="#s2-1">2.1</a></li><li><a href="#s2-2">2.2</a></li><li><a href="#s2-3">2.3</a></li><li><a href="#s2-4">2.4</a></li><li><a href="#s2-5">2.5</a></li>
+    <li><a href="#s3-1">3.1</a></li><li><a href="#s3-2">3.2</a></li><li><a href="#s3-3">3.3</a></li>
+    <li><a class="pf" href="#proofs">Short proofs</a></li>
+  </ul>
+
+  <!-- ====================== 1.1 – 1.2 ====================== -->
+  <section id="s1-1">
+    <h2 id="s1-2"><span class="sec">§1.1–1.2</span> Populations, samples, and pictures of data <small>from p. 3</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Probability or inference<small>p. 6</small></dt>
+        <dd><p>A <b>probability</b> question assumes the population is known and asks about a sample. An <b>inferential statistics</b> question starts from a sample and draws a conclusion about the population.</p>
+        <p class="use">Practise: <a href="assignment-1.html#q1">Assignment 1, Q1</a></p></dd></div>
+      <div class="r"><dt>Enumerative or analytic<small>p. 9</small></dt>
+        <dd><p>An <b>enumerative</b> study is about a finite, identifiable, unchanging collection that could be listed in a <b>sampling frame</b>. An <b>analytic</b> study is any other kind, usually aimed at improving a future product or process, so it has no sampling frame.</p>
+        <p class="use">Practise: <a href="assignment-1.html#q2">Assignment 1, Q2</a></p></dd></div>
+      <div class="r"><dt>Relative frequency<small>pp. 16–17</small></dt>
+        <dd>$$\text{relative frequency of a value}=\frac{\text{number of times the value occurs}}{n}$$
+        <p>“At most 5” includes 5. “Fewer than 5” does not. “Between 5 and 10 inclusive” keeps both ends.</p>
+        <p class="use">Practise: <a href="assignment-1.html#q3">Assignment 1, Q3</a></p></dd></div>
+      <div class="r"><dt>Histogram shapes<small>pp. 22–23</small></dt>
+        <dd><p><b>Positively skewed</b>: the long tail runs toward larger values. <b>Negatively skewed</b>: the long tail runs toward smaller values. <b>Symmetric</b>: the left half mirrors the right half.</p>
+        <p class="use">Practise: <a href="assignment-1.html#q3">Assignment 1, Q3</a></p></dd></div>
+    </dl>
+  </section>
+
+  <!-- ====================== 1.3 ====================== -->
+  <section id="s1-3">
+    <h2><span class="sec">§1.3</span> Measures of location <small>from p. 29</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Sample mean<small>p. 30</small></dt>
+        <dd>$$\bar{x}=\frac{x_1+x_2+\cdots+x_n}{n}=\frac{\sum x_i}{n}$$
+        <p class="use">Practise: <a href="assignment-2.html#q1">Assignment 2, Q1</a>, <a href="assignment-2.html#q2">Q2</a></p></dd></div>
+      <div class="r"><dt>Sample median<small>p. 31</small></dt>
+        <dd><p>Order the observations from smallest to largest first.</p>
+        <p>If \(n\) is odd, \(\tilde{x}\) is the single middle value, the \(\left(\tfrac{n+1}{2}\right)\)th ordered value.</p>
+        <p>If \(n\) is even, \(\tilde{x}\) is the average of the two middle values, the \(\left(\tfrac{n}{2}\right)\)th and \(\left(\tfrac{n}{2}+1\right)\)th ordered values.</p>
+        <p>The mean is pulled by a single outlier. The median is not (p. 32).</p>
+        <p class="use">Practise: <a href="assignment-2.html#q1">Assignment 2, Q1</a>, <a href="assignment-2.html#q3">Q3</a></p></dd></div>
+      <div class="r"><dt>Trimmed mean<small>p. 33</small></dt>
+        <dd><p>A 10% trimmed mean drops the smallest 10% and the largest 10% of the sample and averages what is left. If the trimming would remove a number of observations that is not whole, interpolate between the two nearest trimmed means.</p>
+        <p class="use">Practise: <a href="assignment-2.html#q1">Assignment 2, Q1(c) and (d)</a></p></dd></div>
+      <div class="r"><dt>Sample proportion<small>p. 34</small></dt>
+        <dd>$$\frac{x}{n}=\frac{\text{number of successes in the sample}}{n}$$
+        <p>Code each success as 1 and each failure as 0, and the sample mean equals the sample proportion.</p>
+        <p class="use">Practise: <a href="assignment-2.html#q4">Assignment 2, Q4</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> a small data set with one extreme value, then “calculate the mean and median, and say which better represents the data and why.” The reason is always about how the outlier moves the mean and leaves the median alone.</p>
+  </section>
+
+  <!-- ====================== 1.4 ====================== -->
+  <section id="s1-4">
+    <h2><span class="sec">§1.4</span> Measures of variability <small>from p. 36</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Sample variance and standard deviation<small>p. 37</small></dt>
+        <dd>$$s^2=\frac{\sum (x_i-\bar{x})^2}{n-1}=\frac{S_{xx}}{n-1}$$
+        $$s=\sqrt{s^2}$$
+        <p>The divisor is \(n-1\), not \(n\). The deviations \(x_i-\bar{x}\) always add to 0.</p></dd></div>
+      <div class="r"><dt>Computing formula for \(S_{xx}\)<small>p. 39</small></dt>
+        <dd>$$S_{xx}=\sum x_i^2-\frac{\left(\sum x_i\right)^2}{n}$$
+        <p>\(\sum x_i^2\) means square first, then add. \(\left(\sum x_i\right)^2\) means add first, then square.</p>
+        <p>The same thing written as one fraction (the alternate form of \(s^2\)):</p>
+        $$s^2=\frac{n\sum x_i^2-\left(\sum x_i\right)^2}{n(n-1)}$$
+        <p class="use">Practise: <a href="assignment-2.html#q5">Assignment 2, Q5</a>. Proof: <a href="#pf-sxx">the shortcut for \(S_{xx}\)</a></p></dd></div>
+      <div class="r"><dt>Shifting and rescaling<small>p. 40</small></dt>
+        <dd><p>If \(y_i=x_i+c\), then \(s_y^2=s_x^2\). If \(y_i=cx_i\), then</p>
+        $$s_y^2=c^2s_x^2\qquad s_y=\lvert c\rvert\, s_x$$</dd></div>
+      <div class="r"><dt>Fourths and fourth spread<small>p. 40</small></dt>
+        <dd><p>The <b>lower fourth</b> is the median of the smallest half of the ordered data and the <b>upper fourth</b> is the median of the largest half. When \(n\) is odd, the median \(\tilde{x}\) is included in both halves.</p>
+        $$f_s=\text{upper fourth}-\text{lower fourth}$$</dd></div>
+      <div class="r"><dt>Outliers<small>p. 42</small></dt>
+        <dd><p>An observation farther than \(1.5f_s\) from the closest fourth is an <b>outlier</b>. It is <b>extreme</b> if it is more than \(3f_s\) from the nearest fourth, and <b>mild</b> otherwise.</p>
+        $$\text{mild cutoffs: lower fourth}-1.5f_s\quad\text{and}\quad\text{upper fourth}+1.5f_s$$
+        $$\text{extreme cutoffs: lower fourth}-3f_s\quad\text{and}\quad\text{upper fourth}+3f_s$$
+        <p class="use">Practise: <a href="assignment-2.html#q6">Assignment 2, Q6</a></p></dd></div>
+      <div class="r"><dt>Boxplot<small>pp. 40–42</small></dt>
+        <dd><p>The box runs from the lower fourth to the upper fourth with a line at the median. Each whisker stops at the most extreme observation that is not an outlier. Mild outliers are drawn as closed circles and extreme outliers as open circles.</p>
+        <p class="use">Practise: <a href="assignment-2.html#q6">Assignment 2, Q6</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> “compute \(s^2\) and \(s\)” for a short list, often with \(\sum x_i\) and \(\sum x_i^2\) given, or a request to derive the computing formula. Show \(S_{xx}\) as its own line before dividing by \(n-1\).</p>
+  </section>
+
+  <!-- ====================== 2.1 ====================== -->
+  <section id="s2-1">
+    <h2><span class="sec">§2.1</span> Sample spaces and events <small>from p. 53</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Sample space, event<small>pp. 53–54</small></dt>
+        <dd><p>The <b>sample space</b> \(\mathcal{S}\) is the set of all possible outcomes of the experiment. An <b>event</b> is any subset of \(\mathcal{S}\). It is <b>simple</b> if it has exactly one outcome and <b>compound</b> if it has more than one.</p>
+        <p class="use">Practise: <a href="assignment-2.html#q7">Assignment 2, Q7</a>, <a href="assignment-2.html#q8">Q8</a></p></dd></div>
+      <div class="r"><dt>Complement, union, intersection<small>p. 55</small></dt>
+        <dd><p>\(A'\): all outcomes of \(\mathcal{S}\) not in \(A\).</p>
+        <p>\(A\cup B\) (“\(A\) or \(B\)”): outcomes in at least one of the two events.</p>
+        <p>\(A\cap B\) (“\(A\) and \(B\)”): outcomes in both events.</p>
+        <p class="use">Practise: <a href="assignment-2.html#q9">Assignment 2, Q9</a></p></dd></div>
+      <div class="r"><dt>Mutually exclusive<small>p. 56</small></dt>
+        <dd><p>\(A\) and \(B\) are <b>mutually exclusive</b> (disjoint) when \(A\cap B=\varnothing\).</p></dd></div>
+      <div class="r"><dt>De Morgan's laws<small>p. 57, Exercise 9</small></dt>
+        <dd>$$(A\cup B)'=A'\cap B'$$
+        $$(A\cap B)'=A'\cup B'$$
+        <p class="use">Practise: <a href="assignment-2.html#q10">Assignment 2, Q10</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> “list the outcomes in \(\mathcal{S}\), then in the events \(A\), \(B\), \(A\cup B\), \(A\cap B\), \(A'\).” Work through the outcomes in a fixed order so none is missed, and say how many there should be before you list them.</p>
+  </section>
+
+  <!-- ====================== 2.2 ====================== -->
+  <section id="s2-2">
+    <h2><span class="sec">§2.2</span> Axioms and properties of probability <small>from p. 58</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>The three axioms<small>p. 58</small></dt>
+        <dd><p><b>Axiom 1.</b> For any event \(A\), \(P(A)\ge 0\).</p>
+        <p><b>Axiom 2.</b> \(P(\mathcal{S})=1\).</p>
+        <p><b>Axiom 3.</b> If \(A_1,A_2,A_3,\dots\) are disjoint events, then</p>
+        $$P(A_1\cup A_2\cup A_3\cup\cdots)=\sum_{i=1}^{\infty}P(A_i)$$
+        <p>The same holds for a finite collection of disjoint events, and \(P(\varnothing)=0\).</p></dd></div>
+      <div class="r"><dt>Complement rule<small>p. 61</small></dt>
+        <dd>$$P(A)+P(A')=1\qquad\text{so}\qquad P(A)=1-P(A')$$
+        <p>“At least one” is the complement of “none”.</p>
+        <p class="use">Practise: <a href="assignment-3.html#q1">Assignment 3, Q1</a>, <a href="assignment-3.html#q5">Q5</a>. Proof: <a href="#pf-comp">complement rule</a></p></dd></div>
+      <div class="r"><dt>Addition rule<small>p. 62</small></dt>
+        <dd>$$P(A\cup B)=P(A)+P(B)-P(A\cap B)$$
+        <p>If \(A\) and \(B\) are mutually exclusive, this is just \(P(A)+P(B)\).</p>
+        <p class="use">Practise: <a href="assignment-3.html#q2">Assignment 3, Q2</a>, <a href="assignment-3.html#q4">Q4</a>. Proof: <a href="#pf-add">addition rule</a></p></dd></div>
+      <div class="r"><dt>Three events<small>p. 63</small></dt>
+        <dd>$$P(A\cup B\cup C)=P(A)+P(B)+P(C)-P(A\cap B)-P(A\cap C)-P(B\cap C)+P(A\cap B\cap C)$$
+        <p class="use">Practise: <a href="assignment-3.html#q3">Assignment 3, Q3</a>, <a href="assignment-4.html#q2">Assignment 4, Q2</a></p></dd></div>
+      <div class="r"><dt>Equally likely outcomes<small>p. 64</small></dt>
+        <dd>$$P(A)=\frac{N(A)}{N}$$
+        <p>\(N\) is the number of outcomes in \(\mathcal{S}\) and \(N(A)\) is the number in \(A\). Only valid when every outcome is equally likely.</p>
+        <p class="use">Practise: <a href="assignment-3.html#q6">Assignment 3, Q6</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> two or three probabilities and an intersection are given, and you are asked for “at least one”, “neither”, “exactly one”. A Venn diagram filled from the centre outward answers all of them.</p>
+  </section>
+
+  <!-- ====================== 2.3 ====================== -->
+  <section id="s2-3">
+    <h2><span class="sec">§2.3</span> Counting techniques <small>from p. 66</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Product rule<small>pp. 67–68</small></dt>
+        <dd><p>If the first element of an ordered pair can be chosen in \(n_1\) ways and, for each of these, the second in \(n_2\) ways, the number of pairs is \(n_1n_2\). For \(k\)-tuples:</p>
+        $$n_1\cdot n_2\cdots n_k$$
+        <p class="use">Practise: <a href="assignment-3.html#q8">Assignment 3, Q8</a></p></dd></div>
+      <div class="r"><dt>Permutations<small>p. 70</small></dt>
+        <dd><p>Ordered subsets of size \(k\) from \(n\) distinct objects:</p>
+        $$P_{k,n}=n(n-1)\cdots(n-k+1)=\frac{n!}{(n-k)!}$$
+        <p class="use">Practise: <a href="assignment-3.html#q7">Assignment 3, Q7(a)</a></p></dd></div>
+      <div class="r"><dt>Combinations<small>p. 71</small></dt>
+        <dd><p>Unordered subsets of size \(k\) from \(n\) distinct objects:</p>
+        $$\binom{n}{k}=\frac{P_{k,n}}{k!}=\frac{n!}{k!\,(n-k)!}$$
+        <p class="use">Practise: <a href="assignment-3.html#q7">Assignment 3, Q7</a>, <a href="assignment-3.html#q9">Q9</a>, <a href="assignment-3.html#q10">Q10</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> “how many ways…” followed by “what is the probability that…”. Decide first whether order matters. The probability is then favourable count over total count, with both counted the same way.</p>
+  </section>
+
+  <!-- ====================== 2.4 ====================== -->
+  <section id="s2-4">
+    <h2><span class="sec">§2.4</span> Conditional probability <small>from p. 75</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Conditional probability<small>p. 76</small></dt>
+        <dd><p>For \(P(B)\gt 0\),</p>
+        $$P(A\mid B)=\frac{P(A\cap B)}{P(B)}$$
+        <p class="use">Practise: <a href="assignment-4.html#q1">Assignment 4, Q1</a> to <a href="assignment-4.html#q4">Q4</a></p></dd></div>
+      <div class="r"><dt>Multiplication rule<small>p. 77</small></dt>
+        <dd>$$P(A\cap B)=P(A\mid B)\cdot P(B)$$
+        <p>This is the rule behind multiplying along the branches of a tree diagram.</p></dd></div>
+      <div class="r"><dt>Law of total probability<small>p. 80</small></dt>
+        <dd><p>If \(A_1,\dots,A_k\) are mutually exclusive and exhaustive, then for any event \(B\),</p>
+        $$P(B)=P(B\mid A_1)P(A_1)+\cdots+P(B\mid A_k)P(A_k)$$</dd></div>
+      <div class="r"><dt>Bayes' theorem<small>p. 81</small></dt>
+        <dd><p>With the same \(A_1,\dots,A_k\) and \(P(B)\gt 0\),</p>
+        $$P(A_j\mid B)=\frac{P(B\mid A_j)\,P(A_j)}{\sum_{i=1}^{k}P(B\mid A_i)\,P(A_i)}$$
+        <p class="use">Practise: <a href="assignment-4.html#q12">Assignment 4, Q12</a>, <a href="assignment-4.html#q13">Q13</a></p></dd></div>
+      <div class="r"><dt>Complement inside a condition<small>p. 84, Exercise 56</small></dt>
+        <dd>$$P(A\mid B)+P(A'\mid B)=1$$
+        <p class="use">Practise: <a href="assignment-4.html#q5">Assignment 4, Q5</a>. Proof: <a href="#pf-cond">this identity</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> a joint probability table or a two-stage story. \(P(A\mid B)\) and \(P(B\mid A)\) share a numerator and differ in the denominator, so write out which event is the condition before dividing.</p>
+  </section>
+
+  <!-- ====================== 2.5 ====================== -->
+  <section id="s2-5">
+    <h2><span class="sec">§2.5</span> Independence <small>from p. 85</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Independent events<small>pp. 85–86</small></dt>
+        <dd><p>\(A\) and \(B\) are <b>independent</b> if \(P(A\mid B)=P(A)\). Equivalently,</p>
+        $$A \text{ and } B \text{ are independent}\iff P(A\cap B)=P(A)\cdot P(B)$$
+        <p>To check independence, compute both sides separately and compare them.</p>
+        <p class="use">Practise: <a href="assignment-4.html#q7">Assignment 4, Q7</a>, <a href="assignment-4.html#q9">Q9</a></p></dd></div>
+      <div class="r"><dt>Complements stay independent<small>p. 86</small></dt>
+        <dd><p>If \(A\) and \(B\) are independent, then so are \(A'\) and \(B\), \(A\) and \(B'\), and \(A'\) and \(B'\).</p>
+        <p class="use">Practise: <a href="assignment-4.html#q9">Assignment 4, Q9</a>. Proof: <a href="#pf-indep">independence of complements</a></p></dd></div>
+      <div class="r"><dt>Not the same as mutually exclusive<small>p. 86</small></dt>
+        <dd><p>If \(A\) and \(B\) are mutually exclusive and both have positive probability, they are <b>not</b> independent: knowing \(A\) occurred tells you \(B\) did not.</p></dd></div>
+      <div class="r"><dt>Mutual independence<small>p. 88</small></dt>
+        <dd><p>\(A_1,\dots,A_n\) are <b>mutually independent</b> if the product rule holds for every pair, every triple, and so on up to all \(n\):</p>
+        $$P(A_{i_1}\cap A_{i_2}\cap\cdots\cap A_{i_k})=P(A_{i_1})\cdot P(A_{i_2})\cdots P(A_{i_k})$$
+        <p>Pairwise independence alone is not enough.</p>
+        <p class="use">Practise: <a href="assignment-4.html#q7">Assignment 4, Q7</a></p></dd></div>
+      <div class="r"><dt>Series and parallel systems<small>p. 90, Exercise 80</small></dt>
+        <dd><p>With independent components, a <b>series</b> system works only if every component works, so multiply. A <b>parallel</b> system fails only if every component fails, so use the complement.</p>
+        $$P(\text{series works})=p_1p_2\cdots p_k$$
+        $$P(\text{parallel works})=1-(1-p_1)(1-p_2)\cdots(1-p_k)$$
+        <p class="use">Practise: <a href="assignment-4.html#q6">Assignment 4, Q6</a>, <a href="assignment-4.html#q8">Q8</a>, <a href="assignment-4.html#q10">Q10</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> “are \(A\) and \(B\) independent? Justify.” The justification is the two numbers \(P(A\cap B)\) and \(P(A)P(B)\) side by side and one sentence saying whether they are equal. Expect a short proof as well, such as independence of complements.</p>
+  </section>
+
+  <!-- ====================== 3.1 ====================== -->
+  <section id="s3-1">
+    <h2><span class="sec">§3.1</span> Random variables <small>from p. 96</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Random variable<small>p. 96</small></dt>
+        <dd><p>A <b>random variable</b> (rv) is a rule that associates a number with each outcome in \(\mathcal{S}\): a function from the sample space to the real numbers. Capital letters (\(X\), \(Y\)) name the variable and lowercase letters (\(x\), \(y\)) name particular values.</p></dd></div>
+      <div class="r"><dt>Bernoulli rv<small>p. 97</small></dt>
+        <dd><p>Any rv whose only possible values are 0 and 1.</p></dd></div>
+      <div class="r"><dt>Discrete or continuous<small>p. 98</small></dt>
+        <dd><p><b>Discrete</b>: the possible values form a finite set, or can be listed in an infinite sequence with a first element, a second element, and so on.</p>
+        <p><b>Continuous</b>: the possible values fill an entire interval (or a union of intervals), and \(P(X=c)=0\) for every single value \(c\).</p>
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q1">Sections 3.1 to 3.3, Q1</a></p></dd></div>
+    </dl>
+  </section>
+
+  <!-- ====================== 3.2 ====================== -->
+  <section id="s3-2">
+    <h2><span class="sec">§3.2</span> Probability distributions for discrete random variables <small>from p. 99</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Probability mass function<small>p. 100</small></dt>
+        <dd>$$p(x)=P(X=x)$$
+        <p>A legitimate pmf needs both of these:</p>
+        $$p(x)\ge 0\ \text{ for every } x\qquad\text{and}\qquad\sum_{\text{all possible } x}p(x)=1$$
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q2">Sections 3.1 to 3.3, Q2</a>, <a href="sections-3-1-to-3-3.html#q3">Q3</a></p></dd></div>
+      <div class="r"><dt>Parameter, family<small>p. 103</small></dt>
+        <dd><p>A quantity in \(p(x)\) that can take different values, each giving a different distribution, is a <b>parameter</b>. The collection of all those distributions is a <b>family</b>. Example 3.12 gives the geometric family:</p>
+        $$p(x)=(1-p)^{x-1}p\qquad x=1,2,3,\dots$$</dd></div>
+      <div class="r"><dt>Cumulative distribution function<small>p. 104</small></dt>
+        <dd>$$F(x)=P(X\le x)=\sum_{y:\,y\le x}p(y)$$
+        <p>\(F\) is defined for <em>every</em> number \(x\). For a discrete rv it is a step function: it jumps at each possible value and is flat in between (p. 105).</p>
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q4">Sections 3.1 to 3.3, Q4</a></p></dd></div>
+      <div class="r"><dt>Probabilities from the cdf<small>p. 106</small></dt>
+        <dd>$$P(a\le X\le b)=F(b)-F(a-)$$
+        <p>Here \(a-\) is the largest possible value of \(X\) strictly less than \(a\). When the possible values are integers and \(a\), \(b\) are integers:</p>
+        $$P(a\le X\le b)=F(b)-F(a-1)$$
+        $$P(X=a)=F(a)-F(a-1)$$
+        <p>\(F(b)-F(a)\) gives \(P(a\lt X\le b)\), which leaves \(a\) out.</p>
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q5">Sections 3.1 to 3.3, Q5</a>, <a href="sections-3-1-to-3-3.html#q6">Q6</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> a pmf table with events in words, or a cdf in pieces with “find the pmf”. Translate every event into an inequality in \(X\) first and note whether each end is included.</p>
+  </section>
+
+  <!-- ====================== 3.3 ====================== -->
+  <section id="s3-3">
+    <h2><span class="sec">§3.3</span> Expected values <small>from p. 109</small></h2>
+    <dl class="rows">
+      <div class="r"><dt>Expected value<small>p. 110</small></dt>
+        <dd>$$E(X)=\mu_X=\sum_{x\in D}x\cdot p(x)$$
+        <p>\(D\) is the set of possible values. \(\mu\) need not be a possible value of \(X\).</p>
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q7">Sections 3.1 to 3.3, Q7</a></p></dd></div>
+      <div class="r"><dt>Expected value of a function<small>p. 112</small></dt>
+        <dd>$$E[h(X)]=\sum_{D}h(x)\cdot p(x)$$
+        <p>In general \(E[h(X)]\) is not \(h(E(X))\). It is only when \(h\) is linear.</p>
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q9">Sections 3.1 to 3.3, Q9</a></p></dd></div>
+      <div class="r"><dt>Linear function<small>p. 113</small></dt>
+        <dd>$$E(aX+b)=a\cdot E(X)+b$$
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q8">Sections 3.1 to 3.3, Q8</a>. Proof: <a href="#pf-lin">\(E(aX+b)\)</a></p></dd></div>
+      <div class="r"><dt>Variance and standard deviation<small>p. 114</small></dt>
+        <dd>$$V(X)=\sigma_X^2=\sum_{D}(x-\mu)^2\cdot p(x)=E[(X-\mu)^2]$$
+        $$\sigma_X=\sqrt{\sigma_X^2}$$
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q7">Sections 3.1 to 3.3, Q7</a></p></dd></div>
+      <div class="r"><dt>Shortcut formula<small>p. 115</small></dt>
+        <dd>$$V(X)=E(X^2)-[E(X)]^2$$
+        <p>where \(E(X^2)=\sum_D x^2\cdot p(x)\).</p>
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q7">Sections 3.1 to 3.3, Q7</a>, <a href="sections-3-1-to-3-3.html#q10">Q10</a>. Proof: <a href="#pf-var">shortcut formula</a></p></dd></div>
+      <div class="r"><dt>Variance of a linear function<small>p. 115</small></dt>
+        <dd>$$V(aX+b)=a^2\cdot\sigma_X^2\qquad\sigma_{aX+b}=\lvert a\rvert\cdot\sigma_X$$
+        <p>Adding \(b\) shifts the distribution and leaves the spread unchanged.</p>
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q8">Sections 3.1 to 3.3, Q8</a></p></dd></div>
+      <div class="r"><dt>Bernoulli mean and variance<small>p. 111, and Exercise 33, p. 116</small></dt>
+        <dd><p>If \(p(1)=p\) and \(p(0)=1-p\), then</p>
+        $$E(X)=p\qquad V(X)=p(1-p)$$
+        <p class="use">Practise: <a href="sections-3-1-to-3-3.html#q10">Sections 3.1 to 3.3, Q10</a></p></dd></div>
+    </dl>
+    <p class="test"><b>On a test:</b> a pmf table and “find \(E(X)\), \(V(X)\), \(\sigma_X\)”, then a cost or profit \(aX+b\). Write the sum you are adding, and name the linear rule when you use it.</p>
+  </section>
+
+  <!-- ====================== proofs ====================== -->
+  <section id="proofs">
+    <h2>Short proofs worth knowing</h2>
+    <p class="lede">Each one is a few lines. Write one equals sign per line and say what justifies it. The reason for each line is given in grey.</p>
+
+    <div class="proof" id="pf-sxx">
+      <h3>The shortcut for \(S_{xx}\), and the alternate form of \(s^2\)</h3>
+      <p class="src">Devore p. 39</p>
+      <p>Claim: \(\sum (x_i-\bar{x})^2=\sum x_i^2-\dfrac{\left(\sum x_i\right)^2}{n}\).</p>
+      $$\sum (x_i-\bar{x})^2=\sum\left(x_i^2-2\bar{x}x_i+\bar{x}^2\right)$$
+      <p class="why">Expand the square.</p>
+      $$=\sum x_i^2-2\bar{x}\sum x_i+n\bar{x}^2$$
+      <p class="why">\(\bar{x}\) is a constant, so it comes out of the sum, and adding \(\bar{x}^2\) a total of \(n\) times gives \(n\bar{x}^2\).</p>
+      $$=\sum x_i^2-2\bar{x}(n\bar{x})+n\bar{x}^2$$
+      <p class="why">\(\sum x_i=n\bar{x}\), from the definition of \(\bar{x}\).</p>
+      $$=\sum x_i^2-n\bar{x}^2$$
+      <p class="why">Collect the two \(n\bar{x}^2\) terms.</p>
+      $$=\sum x_i^2-\frac{\left(\sum x_i\right)^2}{n}$$
+      <p class="why">\(n\bar{x}^2=n\left(\dfrac{\sum x_i}{n}\right)^2=\dfrac{\left(\sum x_i\right)^2}{n}\).</p>
+      <p>Dividing by \(n-1\) and putting everything over \(n\) gives the alternate form:</p>
+      $$s^2=\frac{S_{xx}}{n-1}=\frac{n\sum x_i^2-\left(\sum x_i\right)^2}{n(n-1)}$$
+    </div>
+
+    <div class="proof" id="pf-comp">
+      <h3>Complement rule: \(P(A')=1-P(A)\)</h3>
+      <p class="src">Devore p. 61</p>
+      <p>\(A\) and \(A'\) are disjoint, and \(A\cup A'=\mathcal{S}\).</p>
+      $$1=P(\mathcal{S})$$
+      <p class="why">Axiom 2.</p>
+      $$=P(A\cup A')$$
+      <p class="why">\(A\cup A'=\mathcal{S}\), by the definition of the complement.</p>
+      $$=P(A)+P(A')$$
+      <p class="why">Axiom 3, because \(A\) and \(A'\) are disjoint.</p>
+      <p>Subtract \(P(A)\) from both sides to get \(P(A')=1-P(A)\).</p>
+    </div>
+
+    <div class="proof" id="pf-add">
+      <h3>Addition rule: \(P(A\cup B)=P(A)+P(B)-P(A\cap B)\)</h3>
+      <p class="src">Devore p. 62</p>
+      <p>Split \(A\cup B\) into the disjoint pieces \(A\) and \(B\cap A'\), and split \(B\) into the disjoint pieces \(A\cap B\) and \(A'\cap B\).</p>
+      $$P(B)=P(A\cap B)+P(A'\cap B)$$
+      <p class="why">Axiom 3 on the two pieces of \(B\). So \(P(A'\cap B)=P(B)-P(A\cap B)\).</p>
+      $$P(A\cup B)=P(A)+P(B\cap A')$$
+      <p class="why">Axiom 3 on the two pieces of \(A\cup B\).</p>
+      $$=P(A)+P(B)-P(A\cap B)$$
+      <p class="why">Substitute the first line.</p>
+    </div>
+
+    <div class="proof" id="pf-cond">
+      <h3>\(P(A\mid B)+P(A'\mid B)=1\)</h3>
+      <p class="src">Devore p. 84, Exercise 56</p>
+      <p>Assume \(P(B)\gt 0\).</p>
+      $$P(A\mid B)+P(A'\mid B)=\frac{P(A\cap B)}{P(B)}+\frac{P(A'\cap B)}{P(B)}$$
+      <p class="why">Definition of conditional probability, twice.</p>
+      $$=\frac{P(A\cap B)+P(A'\cap B)}{P(B)}$$
+      <p class="why">Common denominator.</p>
+      $$=\frac{P(B)}{P(B)}=1$$
+      <p class="why">\(A\cap B\) and \(A'\cap B\) are disjoint and their union is \(B\), so Axiom 3 gives \(P(A\cap B)+P(A'\cap B)=P(B)\).</p>
+      <p class="why">Used in <a href="assignment-4.html#q5">Assignment 4, Q5</a>.</p>
+    </div>
+
+    <div class="proof" id="pf-indep">
+      <h3>If \(A\) and \(B\) are independent, so are \(A\) and \(B'\)</h3>
+      <p class="src">Stated on Devore p. 86</p>
+      <p>Assume \(P(A\cap B)=P(A)P(B)\). The goal is \(P(A\cap B')=P(A)P(B')\).</p>
+      $$P(A)=P(A\cap B)+P(A\cap B')$$
+      <p class="why">\(A\cap B\) and \(A\cap B'\) are disjoint and their union is \(A\), so Axiom 3 applies.</p>
+      $$P(A\cap B')=P(A)-P(A\cap B)$$
+      <p class="why">Rearrange.</p>
+      $$=P(A)-P(A)P(B)$$
+      <p class="why">Independence of \(A\) and \(B\).</p>
+      $$=P(A)\left[1-P(B)\right]$$
+      <p class="why">Factor out \(P(A)\).</p>
+      $$=P(A)P(B')$$
+      <p class="why">Complement rule.</p>
+      <p>Swapping the roles of \(A\) and \(B\) shows \(A'\) and \(B\) are independent. Applying the result twice (first to \(A\), \(B\), then to \(B'\), \(A\)) shows \(A'\) and \(B'\) are independent.</p>
+    </div>
+
+    <div class="proof" id="pf-lin">
+      <h3>\(E(aX+b)=a\,E(X)+b\)</h3>
+      <p class="src">Devore p. 113</p>
+      $$E(aX+b)=\sum_D (ax+b)\cdot p(x)$$
+      <p class="why">Expected value of a function, with \(h(x)=ax+b\).</p>
+      $$=a\sum_D x\cdot p(x)+b\sum_D p(x)$$
+      <p class="why">Split the sum and take the constants outside.</p>
+      $$=a\,E(X)+b$$
+      <p class="why">The first sum is the definition of \(E(X)\), and the second is 1 because a pmf adds to 1.</p>
+    </div>
+
+    <div class="proof" id="pf-var">
+      <h3>Shortcut formula: \(V(X)=E(X^2)-[E(X)]^2\)</h3>
+      <p class="src">Devore p. 115</p>
+      $$V(X)=\sum_D (x-\mu)^2\cdot p(x)$$
+      <p class="why">Definition of the variance.</p>
+      $$=\sum_D x^2\cdot p(x)-2\mu\sum_D x\cdot p(x)+\mu^2\sum_D p(x)$$
+      <p class="why">Expand \((x-\mu)^2=x^2-2\mu x+\mu^2\) and carry the sum through each term.</p>
+      $$=E(X^2)-2\mu\cdot\mu+\mu^2$$
+      <p class="why">The three sums are \(E(X^2)\), \(\mu\), and 1.</p>
+      $$=E(X^2)-\mu^2$$
+      <p class="why">Collect terms. This is the same algebra as the shortcut for \(S_{xx}\).</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

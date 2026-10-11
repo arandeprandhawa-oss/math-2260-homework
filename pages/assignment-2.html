@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assignment 2</title>
+<!-- The home page builds this page's card from the block below. -->
+<script type="application/json" id="site-card">
+{"num": "A2", "title": "Assignment 2 practice", "text": "Mean, median and trimmed means, the shortcut formula for the variance, outliers and boxplots, sample spaces, events and Venn diagrams.", "meta": ["§1.3–2.1", "10 questions", "One fixed set"]}
+</script>
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<style>
+/* Layout: one textbook-width column; a sticky strip of ten question chips tracks progress; each question is a ruled section with lettered parts. */
+/* Colours and fonts come from site.css */
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:1.0625rem;line-height:1.55}
+.wrap{max-width:46rem;margin-inline:auto;padding-inline:16px;padding-block:2rem 4rem}
+header.top{display:flex;flex-direction:column;gap:.5rem;padding-bottom:1.25rem}
+.eyebrow{font-family:var(--sans);font-size:.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:2rem;line-height:1.15;font-weight:600;margin:0;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:38rem}
+nav.strip{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:.6rem;display:flex;flex-wrap:wrap;gap:.4rem .75rem;align-items:center;justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.chips a{font-family:var(--mono);font-size:.8rem;width:1.9rem;height:1.9rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;color:var(--muted);text-decoration:none;background:var(--surface)}
+.chips a.some{border-color:var(--accent);color:var(--accent)}
+.chips a.done{background:var(--good);border-color:var(--good);color:var(--surface)}
+.score{font-family:var(--sans);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+section.q{border-top:2px solid var(--ink);margin-top:2.5rem;padding-top:1rem;display:flex;flex-direction:column;gap:1rem;scroll-margin-top:4.5rem}
+.qhead{display:flex;flex-wrap:wrap;gap:.25rem 1rem;align-items:baseline;justify-content:space-between}
+.qhead h2{font-size:1.3rem;font-weight:600;margin:0;text-wrap:balance}
+.qhead h2 span{font-family:var(--mono);font-weight:500;color:var(--accent);margin-right:.5rem}
+.ref{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+p{margin:0}
+.data{font-family:var(--mono);font-size:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:.7rem .9rem;overflow-x:auto;white-space:pre;font-variant-numeric:tabular-nums;margin:0}
+.part{display:grid;grid-template-columns:2rem minmax(0,1fr);gap:.25rem}
+.part>.pl{font-family:var(--sans);font-weight:600;color:var(--muted)}
+.pb{display:flex;flex-direction:column;gap:.6rem;min-width:0}
+.fields{display:flex;flex-wrap:wrap;gap:.6rem 1.25rem;align-items:center}
+.f{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;font-family:var(--sans);font-size:.92rem}
+.f.block{flex-direction:column;align-items:stretch;width:100%}
+input.ans{font-family:var(--mono);font-size:.95rem;width:8.5rem;max-width:100%;padding:.4rem .55rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+input.ans.wide{width:100%}
+input.ans.ok{border-color:var(--good);background:var(--good-soft)}
+input.ans.bad{border-color:var(--bad);background:var(--bad-soft)}
+.choice{display:flex;flex-direction:column;gap:.35rem;font-family:var(--sans);font-size:.92rem}
+.choice label{display:flex;gap:.6rem;align-items:baseline;padding:.4rem .65rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer}
+.choice.ok label:has(input:checked){border-color:var(--good);background:var(--good-soft)}
+.choice.bad label:has(input:checked){border-color:var(--bad);background:var(--bad-soft)}
+.act{display:flex;flex-wrap:wrap;gap:.5rem .9rem;align-items:center}
+button{font-family:var(--sans);font-size:.85rem;font-weight:600;padding:.42rem .9rem;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fb{font-family:var(--sans);font-size:.88rem;min-width:0}
+.fb.good{color:var(--good);font-weight:600}
+.fb.nope{color:var(--bad)}
+.fb.warn{color:var(--muted)}
+.venns{display:flex;flex-wrap:wrap;gap:1rem}
+.venn{flex:1 1 13rem;max-width:17rem;display:flex;flex-direction:column;gap:.3rem;min-width:0}
+.venn .cap{font-family:var(--sans);font-size:.85rem;color:var(--muted)}
+.venn svg{width:100%;height:auto;cursor:pointer;touch-action:manipulation;display:block}
+.vframe{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.venn.ok .vframe{stroke:var(--good);stroke-width:2.5}
+.venn.bad .vframe{stroke:var(--bad);stroke-width:2.5}
+.vreg{display:none}
+.vreg.on{display:inline}
+.vfill{fill:var(--accent);opacity:.4}
+.vc{fill:none;stroke:var(--ink);stroke-width:1.5}
+.venn text{font-family:var(--sans);font-size:12px;fill:var(--ink)}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));gap:.6rem}
+.pick.wide{grid-template-columns:minmax(0,1fr)}
+.opt{background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:.4rem .5rem .5rem;display:flex;flex-direction:column;gap:.15rem;align-items:stretch;color:var(--ink);text-align:left;min-width:0}
+.opt .tag{font-family:var(--mono);font-size:.75rem;font-weight:500;color:var(--muted)}
+.opt svg{width:100%;height:auto;display:block}
+.opt.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.opt.sel .tag{color:var(--accent)}
+.pick.ok .opt.sel{border-color:var(--good);box-shadow:0 0 0 1px var(--good);background:var(--good-soft)}
+.pick.bad .opt.sel{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad);background:var(--bad-soft)}
+.pick text{font-family:var(--sans);font-size:19px;font-weight:500;fill:var(--ink)}
+.pick.wide text{font-family:var(--mono);font-size:10px;fill:var(--muted);text-anchor:middle}
+.pick .ln{stroke:var(--ink);stroke-width:1.5;fill:none}
+.pick .bx{fill:var(--accent-soft);stroke:var(--ink);stroke-width:1.5}
+.pick .ax{stroke:var(--muted);stroke-width:1;fill:none}
+.pick .dot{fill:var(--ink)}
+.choice .mx{min-width:0;overflow-x:auto;overflow-y:hidden}
+.note{font-family:var(--sans);font-size:.85rem;color:var(--muted)}
+details.sol{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+details.sol summary{font-family:var(--sans);font-size:.88rem;font-weight:600;color:var(--accent);padding:.55rem .9rem;cursor:pointer}
+.solbody{padding:.25rem .9rem 1rem;display:flex;flex-direction:column;gap:.7rem;border-top:1px solid var(--line);overflow-x:auto}
+.solbody p b{font-family:var(--sans);font-size:.9rem}
+.plot{overflow-x:auto}
+.plot svg{min-width:26rem;width:100%;height:auto;display:block}
+.plot .ln{stroke:var(--ink);stroke-width:1.5;fill:none}
+.plot .bx{fill:var(--accent-soft);stroke:var(--ink);stroke-width:1.5}
+.plot .ax{stroke:var(--muted);stroke-width:1;fill:none}
+.plot .open{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.plot .dot{fill:var(--ink)}
+.plot text{font-family:var(--mono);font-size:9px;fill:var(--muted);text-anchor:middle}
+footer{margin-top:3rem;border-top:1px solid var(--line);padding-top:1rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between}
+mjx-container[display="true"]{margin:.2rem 0 !important;overflow-x:auto;overflow-y:hidden;max-width:100%}
+@media (max-width:480px){h1{font-size:1.6rem}.part{grid-template-columns:1.6rem minmax(0,1fr)}}
+</style>
+<style id="site-zoom">@media (min-width:900px){html{zoom:0.8}}</style></head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Devore 9e, Sections 1.3, 1.4 and 2.1</div>
+  <h1>Assignment 2 practice</h1>
+  <p class="lede">Ten fresh versions of the Assignment 2 questions, with new numbers and the same skills. Check each part as you go. The worked solutions stay closed until you open them.</p>
+</header>
+
+<nav class="strip" aria-label="Questions">
+  <div class="chips">
+    <a href="#q1">1</a><a href="#q2">2</a><a href="#q3">3</a><a href="#q4">4</a><a href="#q5">5</a><a href="#q6">6</a><a href="#q7">7</a><a href="#q8">8</a><a href="#q9">9</a><a href="#q10">10</a>
+  </div>
+  <div class="score" id="score" aria-live="polite"></div>
+</nav>
+
+<!-- Q1 -->
+<section class="q" id="q1">
+  <div class="qhead"><h2><span>1</span>Mean, median, trimmed means</h2><div class="ref">Devore §1.3, like Exercise 33, p. 34</div></div>
+  <p>A real-estate newsletter reported these sale prices for a sample of 10 homes sold last month (in 1,000s of $).</p>
+  <pre class="data">432   710   498   525   389   1,150   465   540   610   481</pre>
+
+  <div class="part" data-hint="For the mean, add all ten and divide by 10. For the median, sort first. With n = 10 it is the average of the 5th and 6th sorted values.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>Calculate the sample mean and the sample median, in thousands of dollars.</p>
+      <div class="fields">
+        <label class="f"><span>\(\bar{x}\) =</span><input class="ans" inputmode="decimal" data-ans="580" data-tol="0.06"></label>
+        <label class="f"><span>\(\tilde{x}\) =</span><input class="ans" inputmode="decimal" data-ans="511.5" data-tol="0.06"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="part" data-hint="Which sorted positions decide the median? Is 1,150 in one of them?">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Suppose the 6th observation had been 1,450 rather than 1,150. How would the mean and median change?</p>
+      <div class="choice" data-correct="0">
+        <label><input type="radio"> Raises the sample mean but has no effect on the sample median.</label>
+        <label><input type="radio"> Has no effect on the sample mean but raises the sample median.</label>
+        <label><input type="radio"> Has no effect on either the sample mean or the sample median.</label>
+        <label><input type="radio"> Lowers the sample mean but has no effect on the sample median.</label>
+        <label><input type="radio"> Raises both the sample mean and the sample median.</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="part" data-hint="Sort, drop the two smallest and the two largest, then average the six that remain. Give the answer in dollars.">
+    <div class="pl">(c)</div><div class="pb">
+      <p>Calculate a 20% trimmed mean by trimming the two smallest and two largest observations. Round to the nearest hundred dollars.</p>
+      <div class="fields"><label class="f"><span>$</span><input class="ans" inputmode="decimal" data-ans="519800" data-tol="50" data-alt="519.8" data-alttol="0.05"></label></div>
+    </div>
+  </div>
+
+  <div class="part" data-hint="15% of 10 is 1.5 observations, and you can't trim half a value. Which two trimming percentages sit on either side of 15%, and how could you combine them?">
+    <div class="pl">(d)</div><div class="pb">
+      <p>Calculate a 15% trimmed mean. Round to the nearest hundred dollars.</p>
+      <div class="fields"><label class="f"><span>$</span><input class="ans" inputmode="decimal" data-ans="526200" data-tol="50" data-alt="526.2" data-alttol="0.05"></label></div>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> The ten values add to 5,800.</p>
+    \[\bar{x} = \frac{5800}{10} = 580.0\]
+    <p>Sorted: 389, 432, 465, 481, 498, 525, 540, 610, 710, 1150. With \(n = 10\), the median averages the 5th and 6th values.</p>
+    \[\tilde{x} = \frac{498 + 525}{2} = 511.5\]
+    <p>The average sale price in this sample was $580,000. Half the homes sold for less than $511,500 and half sold for more.</p>
+    <p><b>(b)</b> 1,150 is already the largest value, so raising it to 1,450 leaves the 5th and 6th sorted values alone. The median stays at 511.5. The sum rises by 300, so the mean rises to \(6100/10 = 610\).</p>
+    <p><b>(c)</b> Drop 389, 432 and 710, 1150.</p>
+    \[\bar{x}_{tr(20)} = \frac{465+481+498+525+540+610}{6} = \frac{3119}{6} \approx 519.83\]
+    <p>That is $519,800 to the nearest hundred.</p>
+    <p><b>(d)</b> A 15% trim would remove 1.5 values from each end, so average the 10% and 20% trimmed means. The 10% trimmed mean drops only 389 and 1150.</p>
+    \[\bar{x}_{tr(10)} = \frac{5800 - 389 - 1150}{8} = \frac{4261}{8} = 532.625\]
+    \[\bar{x}_{tr(15)} = \frac{532.625 + 519.833}{2} \approx 526.23\]
+    <p>That is $526,200 to the nearest hundred.</p>
+  </div></details>
+</section>
+
+<!-- Q2 -->
+<section class="q" id="q2">
+  <div class="qhead"><h2><span>2</span>Choosing a representative value</h2><div class="ref">Devore §1.3, like Exercise 37, p. 35</div></div>
+  <p>October rainfall (mm) at a weather station over ten consecutive years.</p>
+  <pre class="data">62   88   71   95   240   79   84   68   91   77</pre>
+
+  <div class="part" data-hint="Sort the values before finding the median.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>Calculate the sample mean and median.</p>
+      <div class="fields">
+        <label class="f"><span>\(\bar{x}\) =</span><input class="ans" inputmode="decimal" data-ans="95.5" data-tol="0.06"><span>mm</span></label>
+        <label class="f"><span>\(\tilde{x}\) =</span><input class="ans" inputmode="decimal" data-ans="81.5" data-tol="0.06"><span>mm</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="part" data-hint="How many of the ten years had rainfall at or above the mean you found?">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Which would you report as a typical October rainfall for this period? Say why in one sentence before you check.</p>
+      <div class="choice" data-correct="1">
+        <label><input type="radio"> The mean</label>
+        <label><input type="radio"> The median</label>
+      </div>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> The sum is 955, so \(\bar{x} = 95.5\) mm. Sorted: 62, 68, 71, 77, 79, 84, 88, 91, 95, 240.</p>
+    \[\tilde{x} = \frac{79 + 84}{2} = 81.5\]
+    <p><b>(b)</b> Report the median. The single 240 mm year pulls the mean up to 95.5, a value that only one of the ten years actually exceeded. The median of 81.5 mm sits in the middle of the other nine years and is not affected by how extreme that one year was.</p>
+  </div></details>
+</section>
+
+<!-- Q3 -->
+<section class="q" id="q3">
+  <div class="qhead"><h2><span>3</span>Sensitivity of the median</h2><div class="ref">Devore §1.3, like Exercise 38, p. 35</div></div>
+  <p>Blood pressures are reported to the nearest 5 mmHg. The actual values for nine individuals are below.</p>
+  <pre class="data">127.6   132.4   118.9   141.2   136.0   122.3   144.8   131.0   139.5</pre>
+
+  <div class="part" data-hint="Round each value to the nearest 5 first, then sort the nine reported values and take the 5th.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>What is the median of the <em>reported</em> values?</p>
+      <div class="fields"><label class="f"><input class="ans" inputmode="decimal" data-ans="130" data-tol="0.01"><span>mmHg</span></label></div>
+    </div>
+  </div>
+  <div class="part" data-hint="Which multiple of 5 is 132.6 closest to? Re-sort the reported values after that change.">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Suppose the second individual's value is 132.6 rather than 132.4. What is the new median of the reported values?</p>
+      <div class="fields"><label class="f"><input class="ans" inputmode="decimal" data-ans="135" data-tol="0.01"><span>mmHg</span></label></div>
+    </div>
+  </div>
+  <div class="part" data-hint="Compare how much the actual value changed with how much the median changed.">
+    <div class="pl">(c)</div><div class="pb">
+      <p>What does this say about the median when data are rounded or grouped?</p>
+      <div class="choice" data-correct="2">
+        <label><input type="radio"> The median never changes when a single value changes.</label>
+        <label><input type="radio"> The median is more sensitive to outliers than the mean is.</label>
+        <label><input type="radio"> A very small change in one value can move the median by a whole rounding step.</label>
+        <label><input type="radio"> Rounding makes the median equal to the mean.</label>
+      </div>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> Reported values: 130, 130, 120, 140, 135, 120, 145, 130, 140. Sorted: 120, 120, 130, 130, <u>130</u>, 135, 140, 140, 145. The 5th value is 130.</p>
+    <p><b>(b)</b> 132.6 rounds to 135 instead of 130. Sorted: 120, 120, 130, 130, <u>135</u>, 135, 140, 140, 145. The median is now 135.</p>
+    <p><b>(c)</b> One actual value moved by 0.2 and the median jumped by 5. When data are rounded or grouped, the median can be highly sensitive to a small change in a single observation near the middle.</p>
+  </div></details>
+</section>
+
+<!-- Q4 -->
+<section class="q" id="q4">
+  <div class="qhead"><h2><span>4</span>Sample proportion</h2><div class="ref">Devore §1.3, like Exercise 41, p. 36</div></div>
+  <p>A sample of \(n = 12\) phones was drop-tested. S means no visible damage and F means damage.</p>
+  <pre class="data">S  F  S  S  F  S  S  S  F  S  S  S</pre>
+
+  <div class="part" data-hint="Count the S's and divide by 12.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>What is the sample proportion of successes?</p>
+      <div class="fields"><label class="f"><span>\(x/n\) =</span><input class="ans" inputmode="decimal" data-ans="0.75" data-tol="0.005"></label></div>
+    </div>
+  </div>
+  <div class="part" data-hint="The sum of the 1's and 0's is just the number of S's.">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Replace each S with 1 and each F with 0, then calculate \(\bar{x}\). How does it compare with \(x/n\)?</p>
+      <div class="fields"><label class="f"><span>\(\bar{x}\) =</span><input class="ans" inputmode="decimal" data-ans="0.75" data-tol="0.005"></label></div>
+    </div>
+  </div>
+  <div class="part" data-hint="How many S's does a sample of 40 need for a proportion of 0.85? How many do you already have?">
+    <div class="pl">(c)</div><div class="pb">
+      <p>Suppose 28 more phones are tested. How many of them would have to be S's to give \(x/n = 0.85\) for the entire sample of 40?</p>
+      <div class="fields"><label class="f"><input class="ans" inputmode="numeric" data-ans="25" data-tol="0.01"><span>of the 28</span></label></div>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> There are 9 S's.</p>
+    \[\frac{x}{n} = \frac{9}{12} = 0.75\]
+    <p><b>(b)</b> The coded data are nine 1's and three 0's, so the sum is 9 and \(\bar{x} = 9/12 = 0.75\). For 0/1 data, the sample mean is the sample proportion of successes.</p>
+    <p><b>(c)</b> A proportion of 0.85 in 40 phones needs \(0.85 \times 40 = 34\) S's. You already have 9, so \(34 - 9 = 25\) of the 28 new phones must be S's.</p>
+  </div></details>
+</section>
+
+<!-- Q5 -->
+<section class="q" id="q5">
+  <div class="qhead"><h2><span>5</span>Variance by the shortcut formula</h2><div class="ref">Devore §1.4, like Exercise 44, p. 44</div></div>
+  <p>Twelve observations on coating thickness (mm).</p>
+  <pre class="data">3.1   2.8   4.0   3.6   2.5   3.9
+4.4   3.2   2.9   3.7   4.1   3.3</pre>
+
+  <div class="part" data-hint="Square each value before adding for the second sum. It is not the square of the first sum.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>Calculate the two sums.</p>
+      <div class="fields">
+        <label class="f"><span>\(\sum x_i\) =</span><input class="ans" inputmode="decimal" data-ans="41.5" data-tol="0.011"></label>
+        <label class="f"><span>\(\sum x_i^2\) =</span><input class="ans" inputmode="decimal" data-ans="147.27" data-tol="0.011"></label>
+      </div>
+    </div>
+  </div>
+  <div class="part" data-hint="Find Sxx = Σx² − (Σx)²/n first. Which number do you divide Sxx by for a sample variance?">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Use those sums to compute the sample variance and standard deviation, to four decimal places.</p>
+      <div class="fields">
+        <label class="f"><span>\(s^2\) =</span><input class="ans" inputmode="decimal" data-ans="0.3408" data-tol="0.00016"></label>
+        <label class="f"><span>\(s\) =</span><input class="ans" inputmode="decimal" data-ans="0.5838" data-tol="0.00016"></label>
+      </div>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> \(\sum x_i = 41.5\) and \(\sum x_i^2 = 147.27\).</p>
+    <p><b>(b)</b> Use the shortcut formula for \(S_{xx}\).</p>
+    \[S_{xx} = \sum x_i^2 - \frac{\left(\sum x_i\right)^2}{n} = 147.27 - \frac{(41.5)^2}{12} = 147.27 - 143.5208 = 3.7492\]
+    \[s^2 = \frac{S_{xx}}{n-1} = \frac{3.7492}{11} = 0.3408\]
+    \[s = \sqrt{0.3408} = 0.5838\]
+  </div></details>
+</section>
+
+<!-- Q6 -->
+<section class="q" id="q6">
+  <div class="qhead"><h2><span>6</span>Outliers and boxplots</h2><div class="ref">Devore §1.4, like Exercise 57, p. 46</div></div>
+  <p>A sample of 20 cables was tested for breaking strength, with this partial information.</p>
+  <pre class="data">median       = 152.4
+lower fourth = 147.0
+upper fourth = 161.0
+
+Three smallest:    98.6   139.2   143.5
+Three largest:    166.8   171.9   190.3</pre>
+
+  <div class="part" data-hint="Start with the fourth spread f_s = upper fourth − lower fourth. Mild outliers lie more than 1.5 f_s from the nearest fourth, extreme outliers more than 3 f_s.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>Find the cutoffs for mild and extreme outliers, then classify the data.</p>
+      <div class="fields">
+        <label class="f"><span>Lower mild cutoff</span><input class="ans" inputmode="decimal" data-ans="126" data-tol="0.06"></label>
+        <label class="f"><span>Upper mild cutoff</span><input class="ans" inputmode="decimal" data-ans="182" data-tol="0.06"></label>
+        <label class="f"><span>Lower extreme cutoff</span><input class="ans" inputmode="decimal" data-ans="105" data-tol="0.06"></label>
+        <label class="f"><span>Upper extreme cutoff</span><input class="ans" inputmode="decimal" data-ans="203" data-tol="0.06"></label>
+      </div>
+      <div class="choice" data-correct="2">
+        <label><input type="radio"> There are no outliers.</label>
+        <label><input type="radio"> 98.6 is a mild outlier, and 190.3 is not an outlier.</label>
+        <label><input type="radio"> 98.6 is an extreme outlier, and 190.3 is a mild outlier.</label>
+        <label><input type="radio"> 98.6 and 190.3 are both extreme outliers.</label>
+      </div>
+    </div>
+  </div>
+  <div class="part" data-hint="Each whisker stops at the most extreme observation that is not an outlier, and outliers are drawn as separate points. Check where the box sits against the fourths.">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Construct a boxplot that shows outliers. The box runs from 147.0 to 161.0. Where does each whisker end, and which boxplot below shows this sample?</p>
+      <div class="fields">
+        <label class="f"><span>Lower whisker ends at</span><input class="ans" inputmode="decimal" data-ans="139.2" data-tol="0.06"></label>
+        <label class="f"><span>Upper whisker ends at</span><input class="ans" inputmode="decimal" data-ans="171.9" data-tol="0.06"></label>
+      </div>
+      <div class="pick wide" data-kind="box" data-correct="1"></div>
+    </div>
+  </div>
+  <div class="part" data-hint="Compare the distance from the lower fourth to the median with the distance from the median to the upper fourth.">
+    <div class="pl">(c)</div><div class="pb">
+      <p>What does the box say about the middle half of the data?</p>
+      <div class="choice" data-correct="0">
+        <label><input type="radio"> Positive skew: the upper part of the box is longer.</label>
+        <label><input type="radio"> Negative skew: the lower part of the box is longer.</label>
+        <label><input type="radio"> Roughly symmetric: the median sits in the centre of the box.</label>
+      </div>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> The fourth spread is \(f_s = 161.0 - 147.0 = 14.0\), so \(1.5 f_s = 21\) and \(3 f_s = 42\).</p>
+    \[147.0 - 21 = 126 \qquad 161.0 + 21 = 182\]
+    \[147.0 - 42 = 105 \qquad 161.0 + 42 = 203\]
+    <p>98.6 is below 105, so it is an extreme outlier. 190.3 is above 182 but below 203, so it is a mild outlier. Every other value lies between 126 and 182.</p>
+    <p><b>(b)</b> The whiskers stop at the most extreme non-outliers, 139.2 and 171.9. The two outliers are plotted individually. That is boxplot B. Devore draws a mild outlier as a closed circle and an extreme outlier as an open circle, as in the plot below. The answer options follow WebAssign and draw both as dots.</p>
+    <div class="plot"><svg viewBox="0 0 500 104" role="img" aria-label="Boxplot of breaking strength with box from 147 to 161, median at 152.4, whiskers to 139.2 and 171.9, an extreme outlier at 98.6 and a mild outlier at 190.3">
+      <line class="ln" x1="223.3" y1="48" x2="259.2" y2="48"/><line class="ln" x1="223.3" y1="41" x2="223.3" y2="55"/>
+      <line class="ln" x1="323.6" y1="48" x2="373.7" y2="48"/><line class="ln" x1="373.7" y1="41" x2="373.7" y2="55"/>
+      <rect class="bx" x="259.2" y="32" width="64.4" height="32"/>
+      <line class="ln" x1="284" y1="32" x2="284" y2="64"/>
+      <circle class="open" cx="36.6" cy="48" r="4"/><circle class="dot" cx="458.4" cy="48" r="4"/>
+      <text x="36.6" y="34">98.6</text><text x="223.3" y="34">139.2</text><text x="373.7" y="34">171.9</text><text x="458.4" y="34">190.3</text>
+      <line class="ax" x1="20" y1="80" x2="480" y2="80"/>
+      <path class="ax" d="M43 80v5M135 80v5M227 80v5M319 80v5M411 80v5"/>
+      <text x="43" y="97">100</text><text x="135" y="97">120</text><text x="227" y="97">140</text><text x="319" y="97">160</text><text x="411" y="97">180</text>
+    </svg></div>
+    <p><b>(c)</b> The median is \(152.4 - 147.0 = 5.4\) above the lower fourth and \(161.0 - 152.4 = 8.6\) below the upper fourth. The upper part of the box is longer, so the middle half of the data is positively skewed.</p>
+  </div></details>
+</section>
+
+<!-- Q7 -->
+<section class="q" id="q7">
+  <div class="qhead"><h2><span>7</span>Sample space and events</h2><div class="ref">Devore §2.1, like Exercise 4, p. 56</div></div>
+  <p>Four circuit boards are inspected, and each is classified as passing (P) or defective (D). Write outcomes like <span style="font-family:var(--mono)">PDDP</span>, separated by commas or spaces. For an empty set, type <span style="font-family:var(--mono)">none</span>.</p>
+
+  <div class="part" data-hint="Each of the four boards has two possibilities. Work through them in a fixed order so none are skipped.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>List the 16 outcomes in \(\mathcal{S}\).</p>
+      <label class="f block"><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Outcomes in the sample space" data-set="PPPP PPPD PPDP PPDD PDPP PDPD PDDP PDDD DPPP DPPD DPDP DPDD DDPP DDPD DDDP DDDD"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="Exactly one P means the other three are D. Where can the single P sit?">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Which outcomes are in the event that exactly one board passes?</p>
+      <label class="f block"><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Outcomes with exactly one pass" data-set="PDDD DPDD DDPD DDDP"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="There are only two types a board can be.">
+    <div class="pl">(c)</div><div class="pb">
+      <p>Which outcomes are in the event that all four boards are of the same type?</p>
+      <label class="f block"><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Outcomes with all four the same" data-set="PPPP DDDD"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="At least three means three or four.">
+    <div class="pl">(d)</div><div class="pb">
+      <p>Which outcomes are in the event that at least three boards are defective?</p>
+      <label class="f block"><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Outcomes with at least three defective" data-set="PDDD DPDD DDPD DDDP DDDD"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="The union holds everything in either list. The intersection holds only what appears in both.">
+    <div class="pl">(e)</div><div class="pb">
+      <p>What are the union and the intersection of the events in (c) and (d)?</p>
+      <label class="f block"><span>Union</span><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" data-set="PPPP DDDD PDDD DPDD DDPD DDDP"></label>
+      <label class="f block"><span>Intersection</span><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" data-set="DDDD"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="Is there any outcome that appears in both your (b) list and your (c) list?">
+    <div class="pl">(f)</div><div class="pb">
+      <p>What are the union and the intersection of the events in (b) and (c)?</p>
+      <label class="f block"><span>Union</span><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" data-set="PDDD DPDD DDPD DDDP PPPP DDDD"></label>
+      <label class="f block"><span>Intersection</span><input class="ans wide" autocapitalize="characters" autocomplete="off" spellcheck="false" data-set=""></label>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> There are \(2^4 = 16\) outcomes.</p>
+    <pre class="data">PPPP  PPPD  PPDP  PPDD
+PDPP  PDPD  PDDP  PDDD
+DPPP  DPPD  DPDP  DPDD
+DDPP  DDPD  DDDP  DDDD</pre>
+    <p><b>(b)</b> {PDDD, DPDD, DDPD, DDDP}</p>
+    <p><b>(c)</b> {PPPP, DDDD}</p>
+    <p><b>(d)</b> {PDDD, DPDD, DDPD, DDDP, DDDD}</p>
+    <p><b>(e)</b> Union: {PPPP, DDDD, PDDD, DPDD, DDPD, DDDP}. Intersection: {DDDD}, the only outcome in both lists.</p>
+    <p><b>(f)</b> Union: {PDDD, DPDD, DDPD, DDDP, PPPP, DDDD}. Intersection: \(\varnothing\). No outcome has exactly one pass and also has all four boards alike, so the two events are mutually exclusive.</p>
+  </div></details>
+</section>
+
+<!-- Q8 -->
+<section class="q" id="q8">
+  <div class="qhead"><h2><span>8</span>Sequential sampling</h2><div class="ref">Devore §2.1, like Exercise 6, p. 57</div></div>
+  <p>A drawer holds four batteries. Batteries 1 and 2 are dead, and batteries 3 and 4 are good. A technician tests them in random order and stops as soon as a good battery is found. One possible outcome is <span style="font-family:var(--mono)">4</span>, and another is <span style="font-family:var(--mono)">213</span>. Separate outcomes with commas or spaces.</p>
+
+  <div class="part" data-hint="Group the outcomes by how many batteries get tested: one, two, or three. Every outcome ends in a good battery, and everything before it is dead.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>List the outcomes in \(\mathcal{S}\).</p>
+      <label class="f block"><input class="ans wide" inputmode="text" autocomplete="off" aria-label="Outcomes in the sample space" data-set="3 4 13 14 23 24 123 124 213 214"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="If testing stops after one battery, what must be true of that battery?">
+    <div class="pl">(b)</div><div class="pb">
+      <p>Let \(A\) be the event that exactly one battery is tested. What outcomes are in \(A\)?</p>
+      <label class="f block"><input class="ans wide" autocomplete="off" aria-label="Outcomes in A" data-set="3 4"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="The good battery found is always the last digit of the outcome.">
+    <div class="pl">(c)</div><div class="pb">
+      <p>Let \(B\) be the event that battery 4 is the good one found. What outcomes are in \(B\)?</p>
+      <label class="f block"><input class="ans wide" autocomplete="off" aria-label="Outcomes in B" data-set="4 14 24 124 214"></label>
+    </div>
+  </div>
+  <div class="part" data-hint="Go through your list from (a) and keep the outcomes with no 2 in them.">
+    <div class="pl">(d)</div><div class="pb">
+      <p>Let \(C\) be the event that battery 2 is not tested. What outcomes are in \(C\)?</p>
+      <label class="f block"><input class="ans wide" autocomplete="off" aria-label="Outcomes in C" data-set="3 4 13 14"></label>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> Testing stops at the first good battery, so each outcome is zero, one, or two dead batteries followed by one good one.</p>
+    <pre class="data">One tested:    3    4
+Two tested:    13   14   23   24
+Three tested:  123  124  213  214</pre>
+    <p>\(\mathcal{S}\) has 10 outcomes.</p>
+    <p><b>(b)</b> \(A = \{3,\ 4\}\)</p>
+    <p><b>(c)</b> \(B = \{4,\ 14,\ 24,\ 124,\ 214\}\)</p>
+    <p><b>(d)</b> \(C = \{3,\ 4,\ 13,\ 14\}\)</p>
+  </div></details>
+</section>
+
+<!-- Q9 -->
+<section class="q" id="q9">
+  <div class="qhead"><h2><span>9</span>Events in set notation</h2><div class="ref">Devore §2.1, like Exercise 8, p. 57</div></div>
+  <p>A data centre has three servers. Let \(A_i\) be the event that server \(i\) is online at noon. For each event, choose the expression that describes it in terms of \(A_1\), \(A_2\), and \(A_3\), then choose the Venn diagram with that event shaded.</p>
+  <p class="note">In each diagram the rectangle is the whole sample space, so shading outside the circles means no server is online.</p>
+
+  <div class="part" data-hint="Count how many servers are online in each shaded region. 'At least one' is an 'or' across the three events.">
+    <div class="pl">(a)</div><div class="pb"><p>At least one server is online.</p>
+      <div class="choice" data-ex="4,1,0,3,2" data-correct="2"></div>
+      <div class="pick" data-n="3" data-opts="7|1,2,3,4,5,6,7|1,2,4|3,5,6" data-correct="1"></div></div>
+  </div>
+  <div class="part" data-hint="No server online means server 1 is offline and server 2 is offline and server 3 is offline.">
+    <div class="pl">(b)</div><div class="pb"><p>No server is online.</p>
+      <div class="choice" data-ex="0,4,2,3,1" data-correct="4"></div>
+      <div class="pick" data-n="3" data-opts="1,2,3,4,5,6,7|7|0|0,1,2,4" data-correct="2"></div></div>
+  </div>
+  <div class="part" data-hint="Only server 2 means server 2 is online and the other two are not.">
+    <div class="pl">(c)</div><div class="pb"><p>Only server 2 is online.</p>
+      <div class="choice" data-ex="2,1,4,3,0" data-correct="0"></div>
+      <div class="pick" data-n="3" data-opts="2,3,6,7|1,2,4|2|7" data-correct="2"></div></div>
+  </div>
+  <div class="part" data-hint="Exactly two excludes the region where all three are online. There are three ways to choose which server is offline.">
+    <div class="pl">(d)</div><div class="pb"><p>Exactly two servers are online.</p>
+      <div class="choice" data-ex="1,2,4,0,3" data-correct="4"></div>
+      <div class="pick" data-n="3" data-opts="3,5,6,7|1,2,4|7|3,5,6" data-correct="3"></div></div>
+  </div>
+  <div class="part" data-hint="An 'or' in the wording is a union. Picture each condition shaded on its own, then combine them.">
+    <div class="pl">(e)</div><div class="pb"><p>Either server 3 is online, or both of the other servers are offline.</p>
+      <div class="choice" data-ex="1,3,0,4,2" data-correct="3"></div>
+      <div class="pick" data-n="3" data-opts="4,5,6,7|0,4,5,6,7|0,4|3,4,5,6,7" data-correct="1"></div></div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> Everything inside any circle.</p>
+    \[A_1 \cup A_2 \cup A_3\]
+    <p><b>(b)</b> Only the region outside all three circles.</p>
+    \[A_1' \cap A_2' \cap A_3'\]
+    <p><b>(c)</b> The part of \(A_2\) that overlaps neither other circle.</p>
+    \[A_1' \cap A_2 \cap A_3'\]
+    <p><b>(d)</b> The three two-circle overlaps, without the centre.</p>
+    \[(A_1 \cap A_2 \cap A_3') \cup (A_1 \cap A_2' \cap A_3) \cup (A_1' \cap A_2 \cap A_3)\]
+    <p><b>(e)</b> All of \(A_3\), together with the region outside the three circles. The part of \(A_1' \cap A_2'\) that lies inside \(A_3\) is already shaded.</p>
+    \[A_3 \cup (A_1' \cap A_2')\]
+  </div></details>
+</section>
+
+<!-- Q10 -->
+<section class="q" id="q10">
+  <div class="qhead"><h2><span>10</span>Venn diagram identities</h2><div class="ref">Devore §2.1, like Exercise 9, p. 57</div></div>
+  <p>For any events \(A\) and \(B\), use Venn diagrams to decide whether each relationship is true or false. Choose the diagram for the left side, then the diagram for the right side.</p>
+
+  <div class="part" data-hint="For the left side, find A ∩ B′ first, then take everything that is not in it.">
+    <div class="pl">(a)</div><div class="pb">
+      <p>\((A \cap B')' = A' \cup B\)</p>
+      <p class="note">Diagram for the left side, \((A \cap B')'\)</p>
+      <div class="pick" data-n="2" data-opts="1|0,2,3|0,1,3|0,2" data-correct="1"></div>
+      <p class="note">Diagram for the right side, \(A' \cup B\)</p>
+      <div class="pick" data-n="2" data-opts="0,2|2,3|0,1,3|0,2,3" data-correct="3"></div>
+      <p class="note">True or false?</p>
+      <div class="choice" data-correct="0">
+        <label><input type="radio"> True</label>
+        <label><input type="radio"> False</label>
+      </div>
+    </div>
+  </div>
+  <div class="part" data-hint="A′ ∪ B′ contains every point that is missing from at least one of the two events.">
+    <div class="pl">(b)</div><div class="pb">
+      <p>\((A \cup B)' = A' \cup B'\)</p>
+      <p class="note">Diagram for the left side, \((A \cup B)'\)</p>
+      <div class="pick" data-n="2" data-opts="0|0,1,2|1,2,3|3" data-correct="0"></div>
+      <p class="note">Diagram for the right side, \(A' \cup B'\)</p>
+      <div class="pick" data-n="2" data-opts="0|0,1,2|1,2,3|3" data-correct="1"></div>
+      <p class="note">True or false?</p>
+      <div class="choice" data-correct="1">
+        <label><input type="radio"> True</label>
+        <label><input type="radio"> False</label>
+      </div>
+    </div>
+  </div>
+
+  <details class="sol"><summary>Worked solution</summary><div class="solbody tex2jax_ignore">
+    <p><b>(a)</b> True. \(A \cap B'\) is the part of \(A\) outside \(B\). Its complement is everything else: the overlap, the rest of \(B\), and the outside. \(A' \cup B\) shades the same three regions, so the two sides match. This is De Morgan's law applied to \(A\) and \(B'\).</p>
+    <p><b>(b)</b> False. \((A \cup B)'\) is only the region outside both circles. \(A' \cup B'\) is everything except the overlap, which is a larger region. The correct identity is below.</p>
+    \[(A \cup B)' = A' \cap B'\]
+  </div></details>
+</section>
+
+<footer>
+  <span class="note">Your answers are remembered in this browser.</span>
+  <button class="ghost" id="reset" type="button">Clear all answers</button>
+</footer>
+</div>
+
+<script>
+window.MathJax={svg:{fontCache:'global'}};
+(function(){
+  var LS='m2260-a2-practice-v2', store={v:{},ok:{}};
+  try{var s=JSON.parse(localStorage.getItem(LS)||'null');
+    if(!s){s=JSON.parse(localStorage.getItem('m2260-a2-practice')||'null'); if(s&&s.v&&s.ok){['v','ok'].forEach(function(k){Object.keys(s[k]).forEach(function(x){if(/^q(6|9|10)-/.test(x)) delete s[k][x];});});}}
+    if(s&&s.v&&s.ok) store=s;}catch(e){}
+  function save(){try{localStorage.setItem(LS,JSON.stringify(store));}catch(e){}}
+  var NS='http://www.w3.org/2000/svg';
+
+  var vn=0, LET='ABCD';
+  function vennSVG(n,masks){
+    var id='v'+(vn++), R=56, W=240, H=n===3?204:176;
+    var C=n===3?[[92,74],[148,74],[120,122]]:[[92,88],[148,88]];
+    var names=n===3?['A₁','A₂','A₃']:['A','B'];
+    var lab=n===3?[[66,62],[174,62],[120,160]]:[[62,72],[178,72]];
+    var defs='',regs='';
+    C.forEach(function(c,i){defs+='<clipPath id="'+id+'c'+i+'"><circle cx="'+c[0]+'" cy="'+c[1]+'" r="'+R+'"/></clipPath>';});
+    masks.forEach(function(m){
+      defs+='<mask id="'+id+'m'+m+'" maskUnits="userSpaceOnUse" x="0" y="0" width="'+W+'" height="'+H+'"><rect width="'+W+'" height="'+H+'" fill="#fff"/>';
+      C.forEach(function(c,i){if(!(m>>i&1)) defs+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="'+R+'" fill="#000"/>';});
+      defs+='</mask>';
+      var inner='<rect class="vfill" x="3" y="3" width="'+(W-6)+'" height="'+(H-6)+'" rx="8"/>';
+      C.forEach(function(c,i){if(m>>i&1) inner='<g clip-path="url(#'+id+'c'+i+')">'+inner+'</g>';});
+      regs+='<g mask="url(#'+id+'m'+m+')">'+inner+'</g>';
+    });
+    return '<svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true"><defs>'+defs+'</defs>'+
+      '<rect class="vframe" x="3" y="3" width="'+(W-6)+'" height="'+(H-6)+'" rx="8"/>'+regs+
+      C.map(function(c){return '<circle class="vc" cx="'+c[0]+'" cy="'+c[1]+'" r="'+R+'"/>';}).join('')+
+      names.map(function(t,i){return '<text x="'+lab[i][0]+'" y="'+lab[i][1]+'" text-anchor="middle">'+t+'</text>';}).join('')+'</svg>';
+  }
+  var BOX=[
+    {lo:98.6,q1:147,med:152.4,q3:161,hi:190.3,out:[]},
+    {lo:139.2,q1:147,med:152.4,q3:161,hi:171.9,out:[98.6,190.3]},
+    {lo:124.2,q1:132,med:137.4,q3:146,hi:156.9,out:[98.6,190.3]},
+    {lo:98.6,q1:132,med:137.4,q3:146,hi:190.3,out:[]}
+  ];
+  function boxSVG(o){
+    var X=function(v){return (14+(v-90)*3).toFixed(1);};
+    var s='<svg viewBox="0 0 360 72" aria-hidden="true">';
+    s+='<line class="ln" x1="'+X(o.lo)+'" y1="26" x2="'+X(o.q1)+'" y2="26"/><line class="ln" x1="'+X(o.lo)+'" y1="19" x2="'+X(o.lo)+'" y2="33"/>';
+    s+='<line class="ln" x1="'+X(o.q3)+'" y1="26" x2="'+X(o.hi)+'" y2="26"/><line class="ln" x1="'+X(o.hi)+'" y1="19" x2="'+X(o.hi)+'" y2="33"/>';
+    s+='<rect class="bx" x="'+X(o.q1)+'" y="12" width="'+((o.q3-o.q1)*3).toFixed(1)+'" height="28"/>';
+    s+='<line class="ln" x1="'+X(o.med)+'" y1="12" x2="'+X(o.med)+'" y2="40"/>';
+    o.out.forEach(function(v){s+='<circle class="dot" cx="'+X(v)+'" cy="26" r="3.2"/>';});
+    s+='<line class="ax" x1="14" y1="50" x2="344" y2="50"/>';
+    for(var v=90;v<=200;v+=10){
+      s+='<line class="ax" x1="'+X(v)+'" y1="50" x2="'+X(v)+'" y2="'+(v%20?53:55)+'"/>';
+      if(v%20===0) s+='<text x="'+X(v)+'" y="67">'+v+'</text>';
+    }
+    return s+'</svg>';
+  }
+  function buildPick(el,id){
+    var opts=el.dataset.kind==='box'?BOX.map(boxSVG):
+      el.dataset.opts.split('|').map(function(t){return vennSVG(+el.dataset.n,t.split(',').map(Number));});
+    el.innerHTML=opts.map(function(svg,i){return '<button type="button" class="opt" aria-pressed="false" aria-label="Diagram '+LET[i]+'"><span class="tag">'+LET[i]+'</span>'+svg+'</button>';}).join('');
+    el.id=id; el._sel=-1;
+    var bs=[].slice.call(el.children);
+    el._paint=function(){bs.forEach(function(b,i){b.classList.toggle('sel',i===el._sel); b.setAttribute('aria-pressed',String(i===el._sel));});};
+    bs.forEach(function(b,i){b.addEventListener('click',function(){el._sel=i; el._paint(); store.v[id]=String(i); edited(el);});});
+  }
+  var EX=[
+    String.raw`A_1 \cup A_2 \cup A_3`,
+    String.raw`A_1' \cap A_2' \cap A_3'`,
+    String.raw`A_1' \cap A_2 \cap A_3'`,
+    String.raw`(A_1 \cap A_2 \cap A_3') \cup (A_1 \cap A_2' \cap A_3) \cup (A_1' \cap A_2 \cap A_3)`,
+    String.raw`A_3 \cup (A_1' \cap A_2')`
+  ];
+  document.querySelectorAll('.choice[data-ex]').forEach(function(c){
+    c.innerHTML=c.dataset.ex.split(',').map(function(k){return '<label><input type="radio"><span class="mx">\\('+EX[k]+'\\)</span></label>';}).join('');
+  });
+
+  function parseNum(t){
+    t=t.replace(/[$,\s]/g,''); if(!t) return null;
+    var f=t.match(/^(-?\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/); if(f) return f[1]/f[2];
+    if(!/^-?(\d+\.?\d*|\.\d+)$/.test(t)) return NaN;
+    return parseFloat(t);
+  }
+  function checkField(f){
+    if(f.classList.contains('pick')){
+      if(f._sel<0) return {s:'empty'};
+      return {s: f._sel===+f.dataset.correct?'ok':'bad'};
+    }
+    if(f.classList.contains('choice')){
+      var rs=[].slice.call(f.querySelectorAll('input')), k=-1;
+      rs.forEach(function(r,i){if(r.checked) k=i;});
+      if(k<0) return {s:'empty'};
+      return {s: k===+f.dataset.correct?'ok':'bad'};
+    }
+    if(f.hasAttribute('data-set')){
+      var raw=f.value.trim(); if(!raw) return {s:'empty'};
+      var target=f.dataset.set.split(' ').filter(Boolean);
+      var toks=(raw.toUpperCase().match(/[A-Z0-9]+/g)||[]).filter(function(t){return t!=='NONE'&&t!=='EMPTY';});
+      var set={}; toks.forEach(function(t){set[t]=1;});
+      var hits=target.filter(function(t){return set[t];}).length;
+      var extra=Object.keys(set).filter(function(t){return target.indexOf(t)<0;}).length;
+      if(hits===target.length&&!extra) return {s:'ok'};
+      var note=target.length?('You have '+hits+' of the '+target.length+' outcomes'+(extra?', plus '+extra+' that '+(extra===1?'does':'do')+' not belong.':'.')):'';
+      return {s:'bad',note:note};
+    }
+    var v=parseNum(f.value);
+    if(v===null) return {s:'empty'};
+    if(isNaN(v)) return {s:'bad',note:'Enter a number.'};
+    var ok=Math.abs(v-(+f.dataset.ans))<=+f.dataset.tol;
+    if(!ok&&f.dataset.alt) ok=Math.abs(v-(+f.dataset.alt))<=+f.dataset.alttol;
+    return {s:ok?'ok':'bad'};
+  }
+  function fieldsOf(part){return [].slice.call(part.querySelectorAll('.ans,.choice,.pick'));}
+  function check(part,quiet){
+    var fs=fieldsOf(part), rs=fs.map(checkField), fb=part.querySelector('.fb');
+    if(rs.some(function(r){return r.s==='empty';})){
+      if(!quiet){fb.className='fb warn'; fb.textContent='Answer everything in this part first.';}
+      return;
+    }
+    fs.forEach(function(f,i){f.classList.toggle('ok',rs[i].s==='ok'); f.classList.toggle('bad',rs[i].s==='bad');});
+    var ok=rs.every(function(r){return r.s==='ok';});
+    var notes=rs.filter(function(r){return r.s==='bad'&&r.note;}).map(function(r){return r.note;}).join(' ');
+    fb.className='fb '+(ok?'good':'nope');
+    fb.textContent=ok?'Correct.':('Not yet. '+notes+' '+(part.dataset.hint||'')).replace(/\s+/g,' ').trim();
+    store.ok[part.id]=ok; save(); progress();
+  }
+  function edited(field){
+    var part=field.closest('.part');
+    field.classList.remove('ok','bad');
+    var fb=part.querySelector('.fb'); fb.className='fb'; fb.textContent='';
+    if(part.id in store.ok){delete store.ok[part.id]; progress();}
+    save();
+  }
+  var total=0;
+  function progress(){
+    var done=0;
+    document.querySelectorAll('section.q').forEach(function(sec){
+      var ps=[].slice.call(sec.querySelectorAll('.part'));
+      var n=ps.filter(function(p){return store.ok[p.id]===true;}).length; done+=n;
+      var chip=document.querySelector('.chips a[href="#'+sec.id+'"]');
+      chip.classList.toggle('done',n===ps.length);
+      chip.classList.toggle('some',n>0&&n<ps.length);
+      chip.setAttribute('aria-label','Question '+sec.id.slice(1)+', '+n+' of '+ps.length+' parts correct');
+    });
+    document.getElementById('score').textContent=done+' of '+total+' parts correct';
+    if(window.Site) Site.report({done:document.querySelectorAll('.chips a.done').length,total:document.querySelectorAll('section.q').length});
+  }
+
+  document.querySelectorAll('section.q').forEach(function(sec){
+    [].slice.call(sec.querySelectorAll('.part')).forEach(function(part,i){
+      part.id=sec.id+'-p'+i; total++;
+      fieldsOf(part).forEach(function(f,k){
+        var id=part.id+'-f'+k;
+        if(f.classList.contains('pick')){
+          buildPick(f,id);
+          if(/^[0-3]$/.test(store.v[id]||'')){f._sel=+store.v[id]; f._paint();}
+        }else if(f.classList.contains('choice')){
+          f.id=id;
+          [].slice.call(f.querySelectorAll('input')).forEach(function(r,j){
+            r.name=id; r.id=id+'-'+j; if(store.v[id]===String(j)) r.checked=true;
+            r.addEventListener('change',function(){store.v[id]=String(j); edited(f);});
+          });
+        }else{
+          f.id=id; if(store.v[id]) f.value=store.v[id];
+          f.addEventListener('input',function(){store.v[id]=f.value; edited(f);});
+          f.addEventListener('keydown',function(e){if(e.key==='Enter') check(part);});
+        }
+      });
+      var act=document.createElement('div'); act.className='act';
+      act.innerHTML='<button type="button">Check</button><span class="fb" aria-live="polite"></span>';
+      part.querySelector('.pb').appendChild(act);
+      act.querySelector('button').addEventListener('click',function(){check(part);});
+      if(part.id in store.ok) check(part,true);
+    });
+  });
+  progress();
+
+  document.querySelectorAll('details.sol').forEach(function(d){
+    d.addEventListener('toggle',function(){
+      var b=d.querySelector('.solbody');
+      if(d.open&&b.classList.contains('tex2jax_ignore')){
+        b.classList.remove('tex2jax_ignore');
+        if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([b]).catch(function(){});
+      }
+    });
+  });
+
+  var reset=document.getElementById('reset'), armed=false;
+  reset.addEventListener('click',function(){
+    if(!armed){armed=true; reset.textContent='Click again to clear everything'; setTimeout(function(){armed=false; reset.textContent='Clear all answers';},4000); return;}
+    store={v:{},ok:{}}; save();
+    document.querySelectorAll('input.ans').forEach(function(f){f.value=''; f.classList.remove('ok','bad');});
+    document.querySelectorAll('.choice').forEach(function(f){f.classList.remove('ok','bad'); f.querySelectorAll('input').forEach(function(r){r.checked=false;});});
+    document.querySelectorAll('.pick').forEach(function(f){f._sel=-1; f._paint(); f.classList.remove('ok','bad');});
+    document.querySelectorAll('.fb').forEach(function(f){f.className='fb'; f.textContent='';});
+    armed=false; reset.textContent='Clear all answers'; progress();
+  });
+})();
+</script>
+<script src="tex-svg.js"></script>
+
+</body>
+</html>

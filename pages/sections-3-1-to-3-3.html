@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sections 3.1–3.3</title>
+<!-- The home page builds this page's card from the block below. -->
+<script type="application/json" id="site-card">
+{"num": "3.1–3.3", "title": "Sections 3.1 to 3.3 practice", "text": "Discrete or continuous, probabilities from a pmf, finding a pmf, the cdf, expected value, variance, linear functions, and a short proof. Built from Devore's exercises, pp. 99–116.", "meta": ["§3.1–3.3", "10 questions", "New numbers every time"]}
+</script>
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<link rel="stylesheet" href="practice.css">
+<style id="site-zoom">@media (min-width:900px){html{zoom:0.8}}</style></head>
+<body>
+<script src="practice.js"></script>
+<script>
+"use strict";
+const {R, ri, pick, shuffle, fx, tr, frac, part, table, sum, scaleInt} = Practice;
+const h2 = v => (v / 100).toFixed(2);                 // hundredths -> "0.25"
+const WORD = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight"];
+const exam = t => `<p class="exam"><b>On a test:</b> ${t}</p>`;
+/* cumulative sums of a list */
+const cum = a => a.map((_, i) => sum(a.slice(0, i + 1)));
+
+const QUESTIONS = [
+
+/* 1 */{title: "Discrete or continuous", ref: "Devore §3.1, Exercise 7, p. 99",
+  pool: [
+    ["the number of unbroken eggs in a randomly chosen standard carton of 12", 0],
+    ["the number of students on a class list who are absent on the first day of classes", 0],
+    ["the number of times a beginner has to swing at a golf ball before hitting it", 1],
+    ["the length of a randomly selected rattlesnake", 2],
+    ["the pH of a randomly chosen soil sample", 2],
+    ["the tension (psi) at which a randomly selected tennis racket has been strung", 2],
+    ["the number of defective bolts in a box of 50", 0],
+    ["the number of batteries tested until the first one with an acceptable voltage is found", 1],
+    ["the time (hours) until a randomly selected light bulb burns out", 2],
+    ["the number of heads in ten tosses of a coin", 0],
+    ["the weight (g) of a randomly selected apple", 2],
+    ["the number of attempts a learner needs to pass a road test", 1]
+  ],
+  orig: {items: [0, 1, 2, 3]},
+  gen() {
+    let items;
+    do { items = shuffle(this.pool.map((_, i) => i)).slice(0, 4); }
+    while (new Set(items.map(i => this.pool[i][1])).size < 3);
+    return {items};
+  },
+  build(p, c) {
+    const V = ["a finite list of values", "an unending list, such as 1, 2, 3, …", "every number in an interval"], D = ["discrete", "continuous"];
+    const L = "abcd";
+    const why = [
+      "The possible values can be counted and the list stops, so it is a finite set. A finite set of values means <b>discrete</b>.",
+      "There is no largest possible value, but the values can still be listed in order with a first, a second, and so on. That is the “countably infinite” case, which is still <b>discrete</b>.",
+      "Any number in a whole interval is possible, and the values in an interval cannot be listed one after another. That makes it <b>continuous</b>."
+    ];
+    const html = `<p>For each random variable, say what kind of set its possible values form, and state whether the variable is discrete.</p>` +
+      p.items.map((i, n) => part(L[n], `<p>The variable is ${this.pool[i][0]}.</p>
+        <div class="row">Possible values: ${c.sel(V, this.pool[i][1])}</div><div class="row">The variable is ${c.sel(D, this.pool[i][1] === 2 ? 1 : 0)}</div>`)).join("");
+    const sol = `<p>The definition on p. 98: a random variable is <b>discrete</b> when its possible values form a finite set, or can be listed in an infinite sequence with a first element, a second element, and so on. It is <b>continuous</b> when its possible values fill an entire interval of the number line (and no single value has positive probability).</p>` +
+      p.items.map((i, n) => `<p><b>(${L[n]})</b> ${why[this.pool[i][1]]}</p>`).join("") +
+      exam("you are given a short description of a variable and asked for its set of possible values and whether it is discrete. Write the set out, for example {0, 1, …, 12} or {1, 2, 3, …}, then give the one-line reason.");
+    return {html, sol};
+  }},
+
+/* 2 */{title: "Probabilities from a pmf table", ref: "Devore §3.2, Exercise 13, p. 107",
+  ctxs: [
+    ["A mail-order computer business has", "telephone lines", "lines"],
+    ["A grocery store has", "checkout lanes", "lanes"],
+    ["A parking garage has", "electric-vehicle chargers", "chargers"],
+    ["A campus computer lab has", "workstations", "workstations"]
+  ],
+  orig: {n: 6, pr: [10, 15, 20, 25, 20, 6, 4], k: 3, a: 2, b: 5, lo: 2, hi: 4, m: 4, ctx: 0},
+  gen() {
+    const n = pick([5, 6, 7]), peak = ri(1, n - 2);
+    const w = Array.from({length: n + 1}, (_, i) => Math.exp(-((i - peak) ** 2) / 5) * (0.7 + Math.random() * 0.6));
+    const a = ri(1, 2), lo = ri(1, 2);
+    return {n, pr: scaleInt(w, 100, 2), k: ri(2, n - 2), a, b: ri(a + 2, n - 1), lo, hi: ri(lo + 1, n - 2), m: ri(3, n - 1), ctx: ri(0, 3)};
+  },
+  build(p, c) {
+    const [intro, things, short] = this.ctxs[p.ctx], n = p.n, pr = p.pr;
+    const S = (lo, hi) => sum(pr.filter((_, x) => x >= lo && x <= hi));
+    const show = (lo, hi) => pr.map((v, x) => [x, v]).filter(([x]) => x >= lo && x <= hi).map(([, v]) => h2(v)).join("+");
+    const A = S(0, p.k), B = S(0, p.k - 1), C = S(p.k, n), Dd = S(p.a, p.b), E = S(n - p.hi, n - p.lo), F = S(0, n - p.m);
+    const html = `<p>${intro} ${WORD[n]} ${things}. Let \\(X\\) denote the number of ${short} in use at a specified time. Suppose the pmf of \\(X\\) is as given in the table.</p>
+      ${table(null, [["\\(x\\)", ...pr.map((_, x) => x)], ["\\(p(x)\\)", ...pr.map(h2)]])}
+      <p>Calculate the probability of each of the following events.</p>
+      ${part("a", `<p>At most ${WORD[p.k]} ${short} are in use.</p><div class="row">${c.num(A / 100, 2)}</div>`)}
+      ${part("b", `<p>Fewer than ${WORD[p.k]} ${short} are in use.</p><div class="row">${c.num(B / 100, 2)}</div>`)}
+      ${part("c", `<p>At least ${WORD[p.k]} ${short} are in use.</p><div class="row">${c.num(C / 100, 2)}</div>`)}
+      ${part("d", `<p>Between ${WORD[p.a]} and ${WORD[p.b]} ${short}, inclusive, are in use.</p><div class="row">${c.num(Dd / 100, 2)}</div>`)}
+      ${part("e", `<p>Between ${WORD[p.lo]} and ${WORD[p.hi]} ${short}, inclusive, are <em>not</em> in use.</p><div class="row">${c.num(E / 100, 2)}</div>`)}
+      ${part("f", `<p>At least ${WORD[p.m]} ${short} are <em>not</em> in use.</p><div class="row">${c.num(F / 100, 2)}</div>`)}`;
+    const sol = R`<p>Each event is a set of \(X\) values. Add \(p(x)\) over those values (the pmf, p. 100).</p>
+      <p><b>(a)</b> "At most ${p.k}" includes ${p.k}.</p>
+      $$P(X\le ${p.k})=${show(0, p.k)}=${h2(A)}$$
+      <p><b>(b)</b> "Fewer than ${p.k}" leaves ${p.k} out.</p>
+      $$P(X\lt ${p.k})=${show(0, p.k - 1)}=${h2(B)}$$
+      <p><b>(c)</b> "At least ${p.k}" is the complement of (b).</p>
+      $$P(X\ge ${p.k})=1-${h2(B)}=${h2(C)}$$
+      <p><b>(d)</b></p>
+      $$P(${p.a}\le X\le ${p.b})=${show(p.a, p.b)}=${h2(Dd)}$$
+      <p><b>(e)</b> The number not in use is \(${n}-X\). Translate the event back to \(X\) first.</p>
+      $$${p.lo}\le ${n}-X\le ${p.hi}\iff ${n - p.hi}\le X\le ${n - p.lo}$$
+      $$P(${n - p.hi}\le X\le ${n - p.lo})=${show(n - p.hi, n - p.lo)}=${h2(E)}$$
+      <p><b>(f)</b> \(${n}-X\ge ${p.m}\) means \(X\le ${n - p.m}\).</p>
+      $$P(X\le ${n - p.m})=${show(0, n - p.m)}=${h2(F)}$$` +
+      exam("a pmf table followed by events in words. Write each event as an inequality in \\(X\\) before adding, and say whether the endpoint is included.");
+    return {html, sol};
+  }},
+
+/* 3 */{title: "Finding the constant in a pmf", ref: "Devore §3.2, Exercise 14, p. 107",
+  orig: {n: 5, m: 3, a: 2, b: 4, D: 50},
+  gen() {
+    const n = pick([4, 5, 6]), SS = n * (n + 1) * (2 * n + 1) / 6, a = ri(2, n - 2);
+    return {n, m: ri(2, n - 1), a, b: ri(a + 1, n - 1), D: pick([SS, SS, SS - 5, SS + 9, 50, 100].filter(d => d > 0))};
+  },
+  build(p, c) {
+    const n = p.n, T = n * (n + 1) / 2, SS = n * (n + 1) * (2 * n + 1) / 6;
+    const B = p.m * (p.m + 1) / 2, C = sum(Array.from({length: p.b - p.a + 1}, (_, i) => p.a + i));
+    const ys = Array.from({length: n}, (_, i) => i + 1);
+    const names = ys.map(y => WORD[y]), listed = names.slice(0, -1).join(", ") + ", or " + names[n - 1];
+    const opts = ["Yes. Every value is at least 0 and the values add to exactly 1.", "No. The values add to more than 1.", "No. The values add to less than 1.", "No. Some of the values are negative."];
+    const dAns = SS === p.D ? 0 : (SS > p.D ? 1 : 2);
+    const html = `<p>A contractor is required by a county planning department to submit ${listed} forms (depending on the nature of the project) in applying for a building permit. Let \\(Y\\) be the number of forms required of the next applicant. The probability that \\(y\\) forms are required is known to be proportional to \\(y\\); that is, \\(p(y)=ky\\) for \\(y=1,\\dots,${n}\\).</p>
+      ${part("a", `<p>What is the value of \\(k\\)?</p><div class="row">\\(k=\\) ${c.num(1 / T, 3)}</div><p class="note">A fraction such as 1/12 is accepted.</p>`)}
+      ${part("b", `<p>What is the probability that at most ${WORD[p.m]} forms are required?</p><div class="row">${c.num(B / T, 3)}</div>`)}
+      ${part("c", `<p>What is the probability that between ${WORD[p.a]} and ${WORD[p.b]} forms (inclusive) are required?</p><div class="row">${c.num(C / T, 3)}</div>`)}
+      ${part("d", `<p>Could \\(p(y)=y^2/${p.D}\\) for \\(y=1,\\dots,${n}\\) be the pmf of \\(Y\\)?</p>${c.radio(opts, dAns)}`)}`;
+    const sol = R`<p>A pmf needs \(p(y)\ge 0\) for every \(y\) and \(\sum p(y)=1\) (p. 100).</p>
+      <p><b>(a)</b> Add the probabilities and set the total equal to 1.</p>
+      $$\sum_{y=1}^{${n}}ky=k(${ys.join("+")})=${T}k=1$$
+      $$k=${frac(1, T)}\approx ${fx(1 / T, 4)}$$
+      <p><b>(b)</b></p>
+      $$P(Y\le ${p.m})=\frac{${ys.slice(0, p.m).join("+")}}{${T}}=${frac(B, T)}${B % T ? R`\approx ${fx(B / T, 3)}` : ""}$$
+      <p><b>(c)</b></p>
+      $$P(${p.a}\le Y\le ${p.b})=\frac{${ys.slice(p.a - 1, p.b).join("+")}}{${T}}=${frac(C, T)}${C % T ? R`\approx ${fx(C / T, 3)}` : ""}$$
+      <p><b>(d)</b> Check the two conditions. Every value \(y^2/${p.D}\) is positive, so only the total needs checking.</p>
+      $$\sum_{y=1}^{${n}}\frac{y^2}{${p.D}}=\frac{${ys.map(y => y * y).join("+")}}{${p.D}}=\frac{${SS}}{${p.D}}${SS === p.D ? "=1" : R`\approx ${fx(SS / p.D, 3)}`}$$
+      <p>${SS === p.D ? "The total is exactly 1, so this <b>is</b> a legitimate pmf." : `The total is ${SS > p.D ? "more" : "less"} than 1, so this <b>cannot</b> be a pmf.`}</p>` +
+      exam("“\\(p(x)=k\\cdot(\\text{something})\\); find \\(k\\)”, then one or two probabilities, then “is this a legitimate pmf? Justify.” The justification is the two conditions: nonnegative values and a total of 1.");
+    return {html, sol};
+  }},
+
+/* 4 */{title: "Largest or smallest of two dice", ref: "Devore §3.2, Exercise 18, p. 108",
+  orig: {s: 6, kind: "max", k: 4, j: 3},
+  gen() { const s = pick([4, 6, 6, 8]); return {s, kind: pick(["max", "max", "min"]), k: ri(2, s - 1), j: ri(2, s - 2)}; },
+  build(p, c) {
+    const s = p.s, N = s * s, mx = p.kind === "max", w = mx ? "maximum" : "minimum";
+    const pm = m => mx ? 2 * m - 1 : 2 * (s - m) + 1;          // numerator of p(m)
+    const Fm = m => mx ? m * m : N - (s - m) * (s - m);        // numerator of F(m)
+    const die = {4: "four-sided", 6: "six-sided", 8: "eight-sided"}[s];
+    const ex = mx ? `\\(M(1,${s - 1})=${s - 1}\\), \\(M(3,3)=3\\)` : `\\(M(1,${s - 1})=1\\), \\(M(3,3)=3\\)`;
+    const html = `<p>Two fair ${die} dice are tossed independently. Let \\(M\\) be the ${w} of the two tosses (so ${ex}, and so on). Give exact fractions, or round to four decimal places.</p>
+      ${part("a", `<p>Find these values of the pmf of \\(M\\).</p><div class="row">\\(p(1)=\\) ${c.num(pm(1) / N, 4)}</div><div class="row">\\(p(${p.k})=\\) ${c.num(pm(p.k) / N, 4)}</div>`)}
+      ${part("b", `<p>Find these values of the cdf of \\(M\\).</p><div class="row">\\(F(${p.j})=\\) ${c.num(Fm(p.j) / N, 4)}</div><div class="row">\\(F(${p.j}.6)=\\) ${c.num(Fm(p.j) / N, 4)}</div>`)}
+      ${part("c", `<p>What is \\(P(M\\gt ${p.j})\\)?</p><div class="row">${c.num(1 - Fm(p.j) / N, 4)}</div>`)}`;
+    const sol = R`<p>There are \(${s}\times ${s}=${N}\) equally likely outcomes \((a,b)\).</p>
+      <p><b>(a)</b> ${mx
+        ? R`The cdf is the easier place to start. \(M\le m\) happens exactly when <em>both</em> tosses are at most \(m\), so \(F(m)=\tfrac{m^2}{${N}}\). The pmf is the size of each jump (p. 106).`
+        : R`\(M\gt m\) happens exactly when <em>both</em> tosses are greater than \(m\), so \(P(M\gt m)=\tfrac{(${s}-m)^2}{${N}}\) and \(F(m)=1-\tfrac{(${s}-m)^2}{${N}}\). The pmf is the size of each jump (p. 106).`}</p>
+      $$p(m)=F(m)-F(m-1)=${mx ? R`\frac{m^2-(m-1)^2}{${N}}=\frac{2m-1}{${N}}` : R`\frac{(${s + 1}-m)^2-(${s}-m)^2}{${N}}=\frac{2(${s}-m)+1}{${N}}`}$$
+      $$p(1)=${frac(pm(1), N)}\qquad p(${p.k})=${frac(pm(p.k), N)}\approx ${fx(pm(p.k) / N, 4)}$$
+      <p>You can also count directly: \(M=${p.k}\) for the ${pm(p.k)} outcomes in which ${mx ? `one toss is ${p.k} and the other is at most ${p.k}` : `one toss is ${p.k} and the other is at least ${p.k}`}.</p>
+      <p><b>(b)</b></p>
+      $$F(${p.j})=P(M\le ${p.j})=${mx ? R`\frac{${p.j}^2}{${N}}` : R`1-\frac{(${s}-${p.j})^2}{${N}}`}=${frac(Fm(p.j), N)}\approx ${fx(Fm(p.j) / N, 4)}$$
+      <p>The cdf of a discrete rv is a step function: it is flat between possible values (p. 105). Since \(M\) cannot land strictly between ${p.j} and ${p.j + 1},</p>
+      $$F(${p.j}.6)=F(${p.j})=${frac(Fm(p.j), N)}$$
+      <p><b>(c)</b></p>
+      $$P(M\gt ${p.j})=1-F(${p.j})=${frac(N - Fm(p.j), N)}\approx ${fx(1 - Fm(p.j) / N, 4)}$$` +
+      exam("“find the pmf of \\(M\\), then the cdf, and graph it.” List the outcomes for one or two values to show where the pattern comes from, and give \\(F\\) for every real number, not only the whole numbers.");
+    return {html, sol};
+  }},
+
+/* 5 */{title: "Probabilities straight from the cdf", ref: "Devore §3.2, Exercise 23, pp. 108–109",
+  ctxs: [["A branch of a certain bank has", "ATMs", "machines in use at a particular time of day"],
+         ["A supermarket has", "self-checkout machines", "machines in use at a particular time of day"],
+         ["A copy centre has", "printers", "printers running at a particular time of day"]],
+  orig: {pr: [6, 13, 20, 28, 25, 5, 3], k: 2, t: 3, a: 2, b: 5, c: 2, d: 5, ctx: 0},
+  gen() {
+    const n = pick([5, 6]), peak = ri(2, n - 2);
+    const w = Array.from({length: n + 1}, (_, i) => Math.exp(-((i - peak) ** 2) / 4) * (0.7 + Math.random() * 0.6));
+    const a = ri(1, 3), cc = ri(0, 2);
+    return {pr: scaleInt(w, 100, 2), k: ri(1, n - 1), t: ri(1, n - 2), a, b: ri(a + 1, n - 1), c: cc, d: ri(cc + 2, n), ctx: ri(0, 2)};
+  },
+  build(p, c) {
+    const pr = p.pr, n = pr.length - 1, F = cum(pr), [intro, things, what] = this.ctxs[p.ctx];
+    const rows = [["\\(x\\lt 0\\)", "0"]].concat(F.map((v, x) => [x < n ? `\\(${x}\\le x\\lt ${x + 1}\\)` : `\\(${n}\\le x\\)`, x < n ? h2(v) : "1"]));
+    const A = pr[p.k], B = 100 - F[p.t], C = F[p.b] - F[p.a - 1], Dd = F[p.d - 1] - F[p.c];
+    const html = `<p>${intro} ${WORD[n]} ${things}. Let \\(X\\) represent the number of ${what}. The cdf of \\(X\\) is as follows.</p>
+      ${table(["For", "\\(F(x)\\)"], rows)}
+      <p>Calculate the following probabilities directly from the cdf.</p>
+      ${part("a", `<div class="row">\\(p(${p.k})\\), that is, \\(P(X=${p.k})\\) = ${c.num(A / 100, 2)}</div>`)}
+      ${part("b", `<div class="row">\\(P(X\\gt ${p.t})\\) = ${c.num(B / 100, 2)}</div>`)}
+      ${part("c", `<div class="row">\\(P(${p.a}\\le X\\le ${p.b})\\) = ${c.num(C / 100, 2)}</div>`)}
+      ${part("d", `<div class="row">\\(P(${p.c}\\lt X\\lt ${p.d})\\) = ${c.num(Dd / 100, 2)}</div>`)}`;
+    const f = x => x < 0 ? "0" : (x >= n ? "1" : h2(F[x]));
+    const sol = R`<p>For whole-number values, \(P(a\le X\le b)=F(b)-F(a-1)\) (the proposition on p. 106). Subtract \(F\) at the value just <em>below</em> the smallest one you want to keep.</p>
+      <p><b>(a)</b> The pmf value is the size of the jump at ${p.k}.</p>
+      $$p(${p.k})=F(${p.k})-F(${p.k - 1})=${f(p.k)}-${f(p.k - 1)}=${h2(A)}$$
+      <p><b>(b)</b></p>
+      $$P(X\gt ${p.t})=1-F(${p.t})=1-${f(p.t)}=${h2(B)}$$
+      <p><b>(c)</b> ${p.a} is included, so subtract \(F(${p.a - 1})\), not \(F(${p.a})\).</p>
+      $$P(${p.a}\le X\le ${p.b})=F(${p.b})-F(${p.a - 1})=${f(p.b)}-${f(p.a - 1)}=${h2(C)}$$
+      <p><b>(d)</b> Strictly between ${p.c} and ${p.d} means \(${p.c + 1}\le X\le ${p.d - 1}\).</p>
+      $$P(${p.c}\lt X\lt ${p.d})=F(${p.d - 1})-F(${p.c})=${f(p.d - 1)}-${f(p.c)}=${h2(Dd)}$$` +
+      exam("a cdf given in pieces and the instruction “using only the cdf”. Write each probability as a difference of two \\(F\\) values before putting in numbers.");
+    return {html, sol};
+  }},
+
+/* 6 */{title: "From the cdf back to the pmf", ref: "Devore §3.2, Exercise 24, p. 109",
+  orig: {vals: [1, 3, 4, 6, 12], pr: [30, 10, 5, 15, 40], i: 1, j: 3, m: 2},
+  gen() {
+    const i = ri(1, 2);
+    return {vals: [1, 3, 4, 6, 12], pr: scaleInt([1, 2, 3, 4, 5].map(() => 0.4 + Math.random()), 100, 5), i, j: ri(i + 1, 3), m: ri(1, 3)};
+  },
+  build(p, c) {
+    const v = p.vals, pr = p.pr, F = cum(pr), n = v.length;
+    const rows = [[`\\(x\\lt ${v[0]}\\)`, "0"]].concat(F.map((f, k) => [k < n - 1 ? `\\(${v[k]}\\le x\\lt ${v[k + 1]}\\)` : `\\(${v[k]}\\le x\\)`, k < n - 1 ? h2(f) : "1"]));
+    const B1 = F[p.j] - F[p.i - 1], B2 = 100 - F[p.m - 1];
+    const f = k => k < 0 ? "0" : (k === n - 1 ? "1" : h2(F[k]));
+    const html = `<p>An insurance company offers its policyholders a number of different premium payment options. For a randomly selected policyholder, let \\(X\\) be the number of months between successive payments. The cdf of \\(X\\) is as follows.</p>
+      ${table(["For", "\\(F(x)\\)"], rows)}
+      ${part("a", `<p>What is the pmf of \\(X\\)?</p>${table(null, [["\\(x\\)", ...v], ["\\(p(x)\\)", ...pr.map(q => c.num(q / 100, 2))]], "fill")}`)}
+      ${part("b", `<p>Using just the cdf, compute these two probabilities.</p><div class="row">\\(P(${v[p.i]}\\le X\\le ${v[p.j]})\\) = ${c.num(B1 / 100, 2)}</div><div class="row">\\(P(${v[p.m]}\\le X)\\) = ${c.num(B2 / 100, 2)}</div>`)}`;
+    const sol = R`<p><b>(a)</b> The possible values of \(X\) are the places where the cdf jumps: ${v.join(", ")}. The probability at each value is the height of the jump there (p. 106).</p>
+      ${v.map((x, k) => R`$$p(${x})=${f(k)}-${f(k - 1)}=${h2(pr[k])}$$`).join("\n")}
+      <p>Check: \(${pr.map(h2).join("+")}=1\).</p>
+      <p><b>(b)</b> Use \(P(a\le X\le b)=F(b)-F(a-)\), where \(a-\) is the largest possible value strictly less than \(a\) (p. 106). The possible value just below ${v[p.i]} is ${v[p.i - 1]}.</p>
+      $$P(${v[p.i]}\le X\le ${v[p.j]})=F(${v[p.j]})-F(${v[p.i - 1]})=${f(p.j)}-${f(p.i - 1)}=${h2(B1)}$$
+      <p>The possible value just below ${v[p.m]} is ${v[p.m - 1]}.</p>
+      $$P(${v[p.m]}\le X)=1-P(X\lt ${v[p.m]})=1-F(${v[p.m - 1]})=1-${f(p.m - 1)}=${h2(B2)}$$` +
+      exam("a cdf whose jumps are not at consecutive whole numbers. Read the possible values off the jump points first. \\(F(a-1)\\) only works when the values are consecutive integers; otherwise step back to the previous <em>possible</em> value.");
+    return {html, sol};
+  }},
+
+/* 7 */{title: "Mean, variance and standard deviation", ref: "Devore §3.3, Exercise 29, p. 116",
+  ctxs: [
+    {vals: [1, 2, 4, 8, 16], text: "The pmf of the amount of memory \\(X\\) (GB) in a purchased flash drive is given below."},
+    {vals: [0, 1, 2, 3, 4], text: "Let \\(X\\) be the number of moving violations for which a randomly selected driver was cited during the last 3 years. The pmf of \\(X\\) is given below."},
+    {vals: [1, 2, 3, 4, 5, 6], text: "A library lets a borrower have at most 6 DVDs at one time. Let \\(X\\) be the number of DVDs checked out to a randomly selected borrower. The pmf of \\(X\\) is given below."},
+    {vals: [2, 4, 6, 8, 10], text: "A machine shop sells drill bits in packs. Let \\(X\\) be the number of bits in a randomly selected pack sold. The pmf of \\(X\\) is given below."}
+  ],
+  orig: {ctx: 0, pr: [5, 10, 35, 40, 10]},
+  gen() { const ctx = ri(0, 3), n = this.ctxs[ctx].vals.length; return {ctx, pr: scaleInt(Array.from({length: n}, () => 0.3 + Math.random()), 100, 5)}; },
+  build(p, c) {
+    const C = this.ctxs[p.ctx], v = C.vals, pr = p.pr.map(q => q / 100);
+    const EX = sum(v.map((x, i) => x * pr[i])), EX2 = sum(v.map((x, i) => x * x * pr[i])), V = EX2 - EX * EX, sd = Math.sqrt(V);
+    const html = `<p>${C.text}</p>
+      ${table(null, [["\\(x\\)", ...v], ["\\(p(x)\\)", ...p.pr.map(h2)]])}
+      ${part("a", `<div class="row">\\(E(X)\\) = ${c.num(EX, 2)}</div>`)}
+      ${part("b", `<p>Compute \\(V(X)\\) directly from the definition. (Three decimal places.)</p><div class="row">\\(V(X)\\) = ${c.num(V, 3)}</div>`)}
+      ${part("c", `<p>Find the standard deviation of \\(X\\). (Three decimal places.)</p><div class="row">\\(\\sigma_X\\) = ${c.num(sd, 3)}</div>`)}
+      ${part("d", `<p>Now use the shortcut formula. First find \\(E(X^2)\\), then \\(V(X)\\).</p><div class="row">\\(E(X^2)\\) = ${c.num(EX2, 2)}</div><div class="row">\\(V(X)\\) = ${c.num(V, 3)}</div>`)}`;
+    const sol = R`<p><b>(a)</b> The expected value is the weighted average of the possible values (p. 110).</p>
+      $$E(X)=\sum x\,p(x)=${v.map((x, i) => `(${x})(${h2(p.pr[i])})`).join("+")}=${tr(EX)}$$
+      <p><b>(b)</b> The variance is the expected squared deviation from \(\mu=${tr(EX)}\) (p. 114).</p>
+      $$V(X)=\sum (x-\mu)^2\,p(x)$$
+      $$=${v.map((x, i) => `(${tr(x - EX)})^2(${h2(p.pr[i])})`).join("+")}$$
+      $$=${fx(V, 4)}$$
+      <p><b>(c)</b></p>
+      $$\sigma_X=\sqrt{${fx(V, 4)}}=${fx(sd, 3)}$$
+      <p><b>(d)</b> Shortcut: \(V(X)=E(X^2)-[E(X)]^2\) (p. 115). Square the values, not the probabilities.</p>
+      $$E(X^2)=\sum x^2\,p(x)=${v.map((x, i) => `(${x * x})(${h2(p.pr[i])})`).join("+")}=${tr(EX2)}$$
+      $$V(X)=${tr(EX2)}-(${tr(EX)})^2=${tr(EX2)}-${tr(EX * EX)}=${fx(V, 4)}$$
+      <p>Both methods give the same variance, as they must.</p>` +
+      exam("a pmf table and “find \\(E(X)\\), \\(V(X)\\) and \\(\\sigma_X\\)”. Show the sum you are adding, even if a calculator does the arithmetic. Units: \\(\\sigma_X\\) has the units of \\(X\\), and \\(V(X)\\) has those units squared.");
+    return {html, sol};
+  }},
+
+/* 8 */{title: "Linear functions of a random variable", ref: "Devore §3.3, Exercise 32, p. 116",
+  orig: {vals: [16, 18, 20], pr: [2, 5, 3], a: 70, b: 650, k: 8},
+  gen() {
+    const vals = pick([[16, 18, 20], [14, 17, 20], [12, 15, 18], [10, 14, 18]]), a = pick([50, 60, 70, 80]);
+    const x = ri(1, 8), y = ri(1, 9 - x);
+    const pr = shuffle([x, y, 10 - x - y]);
+    return {vals, pr, a, b: 50 * ri(4, Math.min(14, Math.floor((a * vals[0] - 50) / 50))), k: pick([5, 8, 10])};
+  },
+  build(p, c) {
+    const v = p.vals, pr = p.pr.map(q => q / 10), t1 = q => (q / 10).toFixed(1), kk = p.k / 1000;
+    const EX = sum(v.map((x, i) => x * pr[i])), EX2 = sum(v.map((x, i) => x * x * pr[i])), V = EX2 - EX * EX;
+    const EP = p.a * EX - p.b, VP = p.a * p.a * V, EH = EX - kk * EX2;
+    const html = `<p>A certain brand of upright freezer is available in three different rated capacities: ${v[0]} ft³, ${v[1]} ft³, and ${v[2]} ft³. Let \\(X\\) be the rated capacity of a freezer of this brand sold at a certain store. Suppose that \\(X\\) has the pmf below.</p>
+      ${table(null, [["\\(x\\)", ...v], ["\\(p(x)\\)", ...p.pr.map(t1)]])}
+      ${part("a", `<p>Compute \\(E(X)\\), \\(E(X^2)\\), and \\(V(X)\\).</p><div class="row">\\(E(X)\\) = ${c.num(EX, 2)}</div><div class="row">\\(E(X^2)\\) = ${c.num(EX2, 2)}</div><div class="row">\\(V(X)\\) = ${c.num(V, 3)}</div>`)}
+      ${part("b", `<p>If the price of a freezer having capacity \\(X\\) is \\(${p.a}X-${p.b}\\) dollars, what is the expected price paid by the next customer to buy a freezer?</p><div class="row">${c.num(EP, {dp: 2, unit: "dollars"})}</div>`)}
+      ${part("c", `<p>What is the variance of the price paid by the next customer?</p><div class="row">${c.num(VP, 1)}</div>`)}
+      ${part("d", `<p>Suppose that although the rated capacity of a freezer is \\(X\\), the actual capacity is \\(h(X)=X-${tr(kk)}X^2\\). What is the expected actual capacity of the freezer purchased by the next customer? (Three decimal places.)</p><div class="row">${c.num(EH, {dp: 3, unit: "ft³"})}</div>`)}`;
+    const sol = R`<p><b>(a)</b></p>
+      $$E(X)=${v.map((x, i) => `(${x})(${t1(p.pr[i])})`).join("+")}=${tr(EX)}$$
+      $$E(X^2)=${v.map((x, i) => `(${x * x})(${t1(p.pr[i])})`).join("+")}=${tr(EX2)}$$
+      $$V(X)=E(X^2)-[E(X)]^2=${tr(EX2)}-(${tr(EX)})^2=${tr(V)}$$
+      <p><b>(b)</b> The price is a linear function of \(X\), so use \(E(aX+b)=a\,E(X)+b\) (p. 113). No new sum is needed.</p>
+      $$E(${p.a}X-${p.b})=${p.a}(${tr(EX)})-${p.b}=${tr(EP)}$$
+      <p><b>(c)</b> \(V(aX+b)=a^2\,V(X)\) (p. 115). The constant \(-${p.b}\) shifts every price by the same amount and does not change the spread.</p>
+      $$V(${p.a}X-${p.b})=${p.a}^2(${tr(V)})=${tr(VP)}$$
+      <p><b>(d)</b> \(h(X)\) is not linear, so \(E[h(X)]\) is <em>not</em> \(h(E(X))\). Use \(E[h(X)]=\sum h(x)\,p(x)\) (p. 112), which here splits into pieces you already have.</p>
+      $$E(X-${tr(kk)}X^2)=E(X)-${tr(kk)}\,E(X^2)=${tr(EX)}-${tr(kk)}(${tr(EX2)})=${fx(EH, 4)}$$` +
+      exam("a pmf followed by a cost or price of the form \\(aX+b\\). State the rule you are using, \\(E(aX+b)=aE(X)+b\\) or \\(V(aX+b)=a^2V(X)\\), then substitute. For the standard deviation use \\(\\sigma_{aX+b}=\\lvert a\\rvert\\,\\sigma_X\\).");
+    return {html, sol};
+  }},
+
+/* 9 */{title: "Expected value of a function: how many to order", ref: "Devore §3.3, Exercise 35, p. 116",
+  orig: {w: [1, 2, 3, 4, 3, 2], cost: 2, price: 4, k: 3},
+  gen() {
+    for (;;) {
+      const w = Array.from({length: 6}, () => ri(1, 4)), cost = ri(1, 3), price = cost + ri(1, 3), k = ri(2, 4), W = sum(w);
+      const rev = n => price * sum(w.map((q, i) => Math.min(i + 1, n) * q)) / W - cost * n;
+      // no ties, and both order sizes make money, so the comparison is a sensible one
+      if (price * sum(w.slice(k)) !== cost * W && rev(k) > 0.2 && rev(k + 1) > 0.2) return {w, cost, price, k};
+    }
+  },
+  build(p, c) {
+    const w = p.w, W = sum(w), k = p.k;
+    const Emin = n => sum(w.map((q, i) => Math.min(i + 1, n) * q));       // times W
+    const rev = n => (p.price * Emin(n) - p.cost * n * W) / W;
+    const r1 = rev(k), r2 = rev(k + 1), better = r2 > r1 ? 1 : 0;
+    const money = x => "$" + x.toFixed(2);
+    const line = n => R`$$E[h_{${n}}(X)]=${p.price}\cdot\frac{${w.map((q, i) => `${Math.min(i + 1, n)}(${q})`).join("+")}}{${W}}-${p.cost * n}=${p.price}\cdot\frac{${Emin(n)}}{${W}}-${p.cost * n}\approx ${fx(rev(n), 2)}$$`;
+    const html = `<p>A small market orders copies of a certain magazine for its magazine rack each week. Let \\(X\\) be the demand for the magazine, with pmf</p>
+      ${table(null, [["\\(x\\)", 1, 2, 3, 4, 5, 6], ["\\(p(x)\\)", ...w.map(q => `\\(\\tfrac{${q}}{${W}}\\)`)]])}
+      <p>Suppose the store owner actually pays ${money(p.cost)} for each copy of the magazine and the price to customers is ${money(p.price)}. Magazines left at the end of the week have no salvage value. Is it better to order ${WORD[k]} or ${WORD[k + 1]} copies of the magazine? [<em>Hint:</em> for each order size, express net revenue as a function of demand \\(X\\), and then compute the expected revenue.]</p>
+      <div class="row">Expected net revenue with ${WORD[k]} copies: ${c.num(r1, {dp: 2, unit: "dollars"})}</div>
+      <div class="row">Expected net revenue with ${WORD[k + 1]} copies: ${c.num(r2, {dp: 2, unit: "dollars"})}</div>
+      ${c.radio([`Order ${WORD[k]} copies.`, `Order ${WORD[k + 1]} copies.`], better)}`;
+    const sol = R`<p>With \(n\) copies on the rack the store sells \(\min(X,n)\) of them: it cannot sell more than the demand, or more than it ordered. It pays for all \(n\).</p>
+      $$h_n(X)=${p.price}\min(X,n)-${p.cost}n$$
+      <p>Use \(E[h(X)]=\sum h(x)\,p(x)\) (p. 112). The constant \(${p.cost}n\) comes straight out of the sum.</p>
+      ${line(k)}
+      ${line(k + 1)}
+      <p>The expected net revenue is larger with ${WORD[better ? k + 1 : k]} copies, so order <b>${WORD[better ? k + 1 : k]}</b>.</p>
+      <p>A quick check: the extra copy costs ${money(p.cost)} and is sold only when \(X\ge ${k + 1}\), which has probability \(${frac(sum(w.slice(k)), W)}\). Its expected revenue is \(${p.price}\cdot ${frac(sum(w.slice(k)), W)}\approx ${fx(p.price * sum(w.slice(k)) / W, 2)}\), which is ${better ? "more" : "less"} than its cost.</p>` +
+      exam("a profit or cost that depends on \\(X\\) through a rule you have to write yourself. Define \\(h(x)\\) in words and as a formula first, tabulate \\(h(x)\\) beside \\(p(x)\\), then add \\(h(x)p(x)\\).");
+    return {html, sol};
+  }},
+
+/* 10 */{title: "Proof: variance of a Bernoulli variable", ref: "Devore §3.3, Exercise 33, p. 116",
+  orig: {pv: 30, e: 79},
+  gen() { return {pv: 5 * ri(2, 18), e: pick([5, 12, 17, 40, 79, 100])}; },
+  build(p, c) {
+    const O = ["0", "1", "p", "1 − p", "p²", "(1 − p)²", "p(1 − p)", "p + p²"], pv = p.pv / 100, V = pv * (1 - pv);
+    const html = `<p>Let \\(X\\) be a Bernoulli random variable with pmf \\(p(1)=p\\) and \\(p(0)=1-p\\) (Example 3.18, p. 111, where \\(E(X)=p\\) is shown).</p>
+      ${part("a", `<p>Compute \\(E(X^2)\\).</p><div class="proof"><span class="l">\\(E(X^2)\\)</span><span>=</span><span>\\(0^2\\cdot(1-p)+1^2\\cdot p\\)</span><span class="l"></span><span>=</span><span>${c.sel(O, 2)}</span></div>`)}
+      ${part("b", `<p>Show that \\(V(X)=p(1-p)\\) by completing each line.</p>
+        <div class="proof"><span class="l">\\(V(X)\\)</span><span>=</span><span>\\(E(X^2)-[E(X)]^2\\)</span>
+        <span class="l"></span><span>=</span><span>${c.sel(O, 2)} − ${c.sel(O, 4)}</span>
+        <span class="l"></span><span>=</span><span>${c.sel(O, 6)}</span></div>`)}
+      ${part("c", `<p>Compute \\(E(X^{${p.e}})\\).</p><div class="row">\\(E(X^{${p.e}})\\) = ${c.sel(O, 2)}</div>`)}
+      ${part("d", `<p>Now suppose \\(p=${tr(pv)}\\). Find the mean, the variance, and the standard deviation of \\(X\\). (Three decimal places where needed.)</p>
+        <div class="row">\\(E(X)\\) = ${c.num(pv, 3)}</div><div class="row">\\(V(X)\\) = ${c.num(V, 4)}</div><div class="row">\\(\\sigma_X\\) = ${c.num(Math.sqrt(V), 3)}</div>`)}`;
+    const sol = R`<p><b>(a)</b> Use \(E[h(X)]=\sum h(x)\,p(x)\) with \(h(x)=x^2\) (p. 112). The only possible values are 0 and 1.</p>
+      $$E(X^2)=0^2\cdot(1-p)+1^2\cdot p=p$$
+      <p><b>(b)</b> Start from the shortcut formula (p. 115) and substitute \(E(X^2)=p\) and \(E(X)=p\).</p>
+      $$V(X)=E(X^2)-[E(X)]^2$$
+      $$=p-p^2$$
+      $$=p(1-p)$$
+      <p>Each line follows from the one before: the first is the shortcut formula, the second is substitution, and the third factors out \(p\). That is all the justification this proof needs.</p>
+      <p><b>(c)</b> \(0^{${p.e}}=0\) and \(1^{${p.e}}=1\), so \(X^{${p.e}}\) takes the same values as \(X\) with the same probabilities.</p>
+      $$E(X^{${p.e}})=0^{${p.e}}\cdot(1-p)+1^{${p.e}}\cdot p=p$$
+      <p><b>(d)</b> With \(p=${tr(pv)}\):</p>
+      $$E(X)=${tr(pv)}\qquad V(X)=(${tr(pv)})(${tr(1 - pv)})=${tr(V)}\qquad \sigma_X=\sqrt{${tr(V)}}\approx ${fx(Math.sqrt(V), 3)}$$` +
+      exam("“show that …” with a two or three line derivation. Write one equals sign per line and name the fact used on each line (definition of \\(E[h(X)]\\), shortcut formula, algebra).");
+    return {html, sol};
+  }}
+];
+
+Practice.page({
+  key: "sections-3-1-to-3-3",
+  where: "Devore 9e, Sections 3.1 to 3.3",
+  title: "Sections 3.1 to 3.3 practice",
+  intro: "Ten questions on discrete random variables, built from the textbook's own exercises: pmf, cdf, expected value and variance. Each one opens with the textbook's numbers. Press <b>New numbers</b> for a fresh version as often as you like.",
+  originalLabel: "Textbook numbers",
+  questions: QUESTIONS
+});
+if (typeof module !== "undefined") module.exports = {QUESTIONS};
+</script>
+</body>
+</html>

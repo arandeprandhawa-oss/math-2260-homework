@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Home</title>
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<style>
+/* Home page. Layout: title, then the coverage map (textbook sections along one axis, a bar
+   for each practice set, a flag where the next test stops), then one card per page.
+   The cards are plain HTML so the publishing script can add one for every new page.
+   The map and the progress meters are drawn from the cards by the script at the bottom. */
+*{box-sizing:border-box}
+body{font-size:16px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:40px 64px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.3rem,7vw,3.6rem);line-height:1.02;letter-spacing:-.01em;margin:0 0 14px}
+.sub{font-family:var(--serif);font-size:1.2rem;line-height:1.45;margin:0;max-width:58ch}
+.sub span{color:var(--muted)}
+.count{margin:14px 0 0;color:var(--muted)}
+.count b{color:var(--ink);font-weight:600}
+.go{display:inline-block;margin-top:22px;font-weight:600;background:var(--accent);color:var(--on-accent);text-decoration:none;border-radius:6px;padding:11px 18px}
+.go:hover{filter:brightness(1.1)}
+h2{font-family:var(--serif);font-weight:600;font-size:1.5rem;line-height:1.2;margin:52px 0 6px}
+.h2note{color:var(--muted);margin:0 0 18px;max-width:66ch}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ----- coverage map ----- */
+.mapbox{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px clamp(10px,2.4vw,24px) 16px}
+.map{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:3px;row-gap:5px;position:relative}
+.map .flagrow{grid-column:1/-1;height:24px}
+.bar{position:relative;z-index:3;display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:0;height:54px;border-radius:5px;border:1.5px solid var(--accent);background:var(--accent-soft);color:var(--accent);text-decoration:none;overflow:hidden;font-family:var(--mono);line-height:1.15}
+.bar:hover{background:var(--surface)}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--bar);opacity:.38}
+.bar b{position:relative;font-weight:500;font-size:.9rem;white-space:nowrap}
+.bar small{position:relative;font-size:.7rem;color:var(--ink);white-space:nowrap}
+.bar.full{border-color:var(--good);color:var(--good)} .bar.full i{background:var(--good);opacity:.22}
+.gap{height:54px;border-radius:5px;border:1.5px dashed var(--line)}
+.gap.due{border-color:var(--flag);background:var(--flag-soft)}
+.tick{font-family:var(--mono);font-size:clamp(.62rem,2.3vw,.8rem);color:var(--muted);text-align:center;padding-top:5px;border-top:2px solid var(--line);min-width:0}
+.tick.due{color:var(--flag);font-weight:500;border-top-color:var(--flag)}
+.chap{font-size:.8rem;color:var(--muted);text-align:center;min-width:0;line-height:1.25;padding:2px 2px 0;overflow:hidden}
+.chap b{display:block;font-weight:600;color:var(--ink)}
+.flag{justify-self:end;width:0;border-right:2px solid var(--flag);position:relative;margin-right:-2.5px;z-index:1;pointer-events:none}
+.flag span{position:absolute;top:0;right:0;white-space:nowrap;background:var(--flag);color:var(--surface);font-size:.78rem;font-weight:600;line-height:1;padding:5px 8px;border-radius:4px 0 0 4px}
+.flag.left span{right:auto;left:2px;border-radius:0 4px 4px 0}
+.mapnote{margin:14px 0 0;font-size:.95rem}
+.mapnote .due{color:var(--flag);font-weight:600}
+details.secs{margin-top:10px;font-size:.92rem}
+details.secs summary{cursor:pointer;color:var(--accent);width:fit-content}
+details.secs ol{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:4px 24px}
+details.secs li{display:grid;grid-template-columns:2.4rem minmax(0,1fr) auto;gap:8px;align-items:baseline}
+details.secs li b{font-family:var(--mono);font-weight:500}
+details.secs li span{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+
+/* ----- one card per page ----- */
+.cards{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.card{display:grid;grid-template-columns:5.2rem minmax(0,1fr) 13rem;column-gap:20px;align-content:start;padding:18px 6px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+.card:hover{background:var(--surface)}
+.card:hover h3{color:var(--accent)}
+.card .k{grid-column:1;grid-row:1 / span 3;font-family:var(--mono);font-weight:500;font-size:.95rem;color:var(--accent);padding-top:5px}
+.card h3{grid-column:2;font-family:var(--serif);font-weight:600;font-size:1.3rem;line-height:1.2;margin:0 0 4px}
+.card p{grid-column:2;margin:0;color:var(--muted);max-width:60ch;font-size:.97rem}
+.card .meta{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.card .meta span{font-size:.8rem;color:var(--muted);background:var(--sunk);border-radius:99px;padding:2px 10px;white-space:nowrap}
+.card .meta span:first-child{font-family:var(--mono);color:var(--ink)}
+.card .prog{grid-column:3;grid-row:1 / span 3;font-size:.88rem}
+.meter{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin:8px 0 6px}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.prog.full .meter i{background:var(--good)} .prog.full{color:var(--good);font-weight:600}
+.prog.none{color:var(--muted)}
+.foot{margin-top:44px;color:var(--muted);font-size:.88rem;max-width:70ch}
+@media (max-width:640px){
+  .wrap{padding-block:26px 48px}
+  .card{grid-template-columns:minmax(0,1fr)}
+  .card .k,.card h3,.card p,.card .meta,.card .prog{grid-column:1;grid-row:auto}
+  .card .k{padding:0 0 2px}
+  .card .prog{margin-top:12px}
+  .bar,.gap{height:48px}
+  .chap{font-size:.72rem}
+  .chap span{display:none}
+}
+</style>
+<style id="site-zoom">@media (min-width:900px){html{zoom:0.8}}</style></head>
+<body>
+<main class="wrap">
+  <h1>MATH 2260 practice</h1>
+  <p class="sub">Probability and Statistics for Science and Engineering. Douglas College, Fall 2026. <span>Follows Devore, Probability and Statistics for Engineering and the Sciences, 9th edition.</span></p>
+  <p class="count"><b>6</b> pages, <b>46</b> questions.</p>
+  <a class="go" id="go" hidden></a>
+
+  <h2>What the practice covers</h2>
+  <p class="h2note">Textbook sections run left to right. Each bar is a practice set and fills in as you solve its questions.</p>
+  <div class="mapbox">
+    <div class="map" id="map" role="group" aria-label="Textbook sections covered by each practice set"></div>
+    <p class="mapnote" id="mapnote" hidden></p>
+    <details class="secs"><summary>Section names and textbook pages</summary><ol id="secs"></ol></details>
+  </div>
+
+  <h2>Pages</h2>
+  <!-- One card per page. The publishing script adds a card here for every new page,
+       using the "site-card" block inside that page. Keep the cards next to each other
+       with nothing in between. -->
+  <div class="cards" id="cards">
+<a class="card" href="assignment-1.html"><div class="k">A1</div><h3>Assignment 1 practice</h3><p>Probability versus inference questions, enumerative and analytic studies, proportions from a frequency table, histograms.</p><div class="meta"><span>§1.1–1.2</span><span>3 questions</span><span>New numbers every time</span></div></a>
+<a class="card" href="assignment-2.html"><div class="k">A2</div><h3>Assignment 2 practice</h3><p>Mean, median and trimmed means, the shortcut formula for the variance, outliers and boxplots, sample spaces, events and Venn diagrams.</p><div class="meta"><span>§1.3–2.1</span><span>10 questions</span><span>One fixed set</span></div></a>
+<a class="card" href="assignment-3.html"><div class="k">A3</div><h3>Assignment 3 practice</h3><p>Complements, the addition rule for two and three events, equally likely outcomes, permutations, combinations and the product rule.</p><div class="meta"><span>§2.2–2.3</span><span>10 questions</span><span>New numbers every time</span></div></a>
+<a class="card" href="assignment-4.html"><div class="k">A4</div><h3>Assignment 4 practice</h3><p>Conditional probability from tables and Venn diagrams, Bayes' theorem, independence, series and parallel systems, a short proof.</p><div class="meta"><span>§2.4–2.5</span><span>13 questions</span><span>New numbers every time</span></div></a>
+<a class="card" href="sections-3-1-to-3-3.html"><div class="k">3.1–3.3</div><h3>Sections 3.1 to 3.3 practice</h3><p>Discrete or continuous, probabilities from a pmf, finding a pmf, the cdf, expected value, variance, linear functions, and a short proof. Built from Devore's exercises, pp. 99–116.</p><div class="meta"><span>§3.1–3.3</span><span>10 questions</span><span>New numbers every time</span></div></a>
+<a class="card" href="01-formula-sheet.html"><div class="k">Ref</div><h3>Formula sheet</h3><p>Every definition and formula from Sections 1.1 to 3.3 with its textbook page, the short proofs worth knowing, and links to the questions that use each one.</p><div class="meta"><span>§1.1–3.3</span><span>7 short proofs</span></div></a>
+  </div>
+
+  <p class="foot">Page numbers are for the 9th edition of Devore. Progress is remembered in this browser only.</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  /* ====== The two things you might edit on this page ======
+     TESTS: the tests flagged on the map. "through" is the last section a test covers.
+     SECTIONS: the textbook sections on the map. A section that a new page covers is
+               added to the map by itself; add a line here only to give it a name and page. */
+  var TESTS = [
+    { name: "Term Test I", date: "2026-10-14", through: "3.4" }
+  ];
+  var CHAPTERS = { 1: "Descriptive statistics", 2: "Probability", 3: "Discrete random variables" };
+  var SECTIONS = [
+    ["1.1", "Populations, samples, and processes", 3],
+    ["1.2", "Pictorial and tabular methods", 13],
+    ["1.3", "Measures of location", 29],
+    ["1.4", "Measures of variability", 36],
+    ["2.1", "Sample spaces and events", 53],
+    ["2.2", "Axioms, interpretations, and properties of probability", 58],
+    ["2.3", "Counting techniques", 66],
+    ["2.4", "Conditional probability", 75],
+    ["2.5", "Independence", 85],
+    ["3.1", "Random variables", 96],
+    ["3.2", "Probability distributions for discrete random variables", 99],
+    ["3.3", "Expected values", 109],
+    ["3.4", "The binomial probability distribution", null]
+  ];
+  /* ======================================================== */
+
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+  function $(id) { return document.getElementById(id); }
+  function num(id) { var p = id.split("."); return (+p[0]) * 1000 + (+p[1]); }
+  var SEC = /§\s*(\d+\.\d+)(?:\s*[–—-]\s*(\d+\.\d+))?/;
+
+  /* read the cards */
+  var cards = [].slice.call(document.querySelectorAll("#cards a.card")).map(function (a) {
+    var metas = [].slice.call(a.querySelectorAll(".meta span")).map(function (s) { return s.textContent.trim(); });
+    var k = a.querySelector(".k"), h = a.querySelector("h3"), c = { el: a, href: a.getAttribute("href") || "", from: null, to: null, questions: 0 };
+    c.file = decodeURIComponent(c.href.split("#")[0].split("/").pop());
+    c.title = h ? h.textContent.trim() : c.file;
+    c.short = k ? k.textContent.trim() : c.title;
+    metas.forEach(function (m) {
+      var s = m.match(SEC), q = m.match(/^(\d+)\s+questions?$/i);
+      if (s && !c.from) { c.from = s[1]; c.to = s[2] || s[1]; }
+      if (q) c.questions = +q[1];
+    });
+    c.practice = c.questions > 0;
+    return c;
+  });
+
+  /* sections: the list above, plus any section a card mentions that is not in it */
+  var secs = SECTIONS.map(function (s) { return { id: s[0], title: s[1], page: s[2] }; }), known = {};
+  secs.forEach(function (s) { known[s.id] = 1; });
+  function need(id) { if (!known[id]) { known[id] = 1; secs.push({ id: id, title: "", page: null }); } }
+  cards.forEach(function (c) {
+    if (!c.practice || !c.from) return;
+    need(c.from); need(c.to);
+    var a = c.from.split("."), b = c.to.split(".");
+    if (a[0] === b[0]) for (var i = +a[1]; i <= +b[1]; i++) need(a[0] + "." + i);
+  });
+  TESTS.forEach(function (t) { if (/^\d+\.\d+$/.test(t.through || "")) need(t.through); });
+  secs.sort(function (x, y) { return num(x.id) - num(y.id); });
+  var sx = {}; secs.forEach(function (s, i) { sx[s.id] = i; });
+
+  function draw() {
+    var prog = (window.Site && Site.allProgress()) || {};
+    function state(c) { var g = prog[c.file]; return g && g.total ? g : null; }
+    var practice = cards.filter(function (c) { return c.practice; });
+
+    /* order the cards: practice sets in textbook order, then everything else */
+    practice.slice().sort(function (x, y) { return (x.from ? sx[x.from] : 999) - (y.from ? sx[y.from] : 999); }).forEach(function (c, i) { c.el.style.order = i + 1; });
+    cards.forEach(function (c) { if (!c.practice) c.el.style.order = 1000; });
+
+    /* progress on each practice card */
+    practice.forEach(function (c) {
+      var g = state(c), old = c.el.querySelector(".prog"), d = document.createElement("div");
+      if (old) c.el.removeChild(old);
+      var total = g ? g.total : c.questions, done = g ? g.done : 0, full = g && done >= total;
+      d.className = "prog" + (full ? " full" : done ? "" : " none");
+      d.innerHTML = '<div class="meter"><i style="width:' + Math.round(100 * done / total) + '%"></i></div>' + (full ? "All " + total + " solved" : done ? done + " of " + total + " solved" : "Not started");
+      c.el.appendChild(d);
+    });
+
+    /* where to pick up */
+    var next = null, started = false;
+    practice.slice().sort(function (x, y) { return (+x.el.style.order) - (+y.el.style.order); }).forEach(function (c) {
+      var g = state(c); if (g && g.done) started = true;
+      if (!next && !(g && g.done >= g.total)) next = c;
+    });
+    var go = $("go");
+    if (next) { go.hidden = false; go.setAttribute("href", next.href); go.textContent = (started ? "Carry on with " : "Start with ") + next.title; } else go.hidden = true;
+
+    /* ----- coverage map ----- */
+    var map = $("map"), n = secs.length, html = "", covered = secs.map(function () { return false; }), lanes = [], placed = [];
+    map.style.setProperty("--n", n);
+    practice.forEach(function (c) {
+      if (!c.from) return;
+      var a = sx[c.from], b = sx[c.to]; if (a == null || b == null) return;
+      if (b < a) { var t = a; a = b; b = t; }
+      var lane = 0; while (lanes[lane] != null && lanes[lane] >= a) lane++;
+      lanes[lane] = b; placed.push({ c: c, a: a, b: b, lane: lane });
+      for (var i = a; i <= b; i++) covered[i] = true;
+    });
+    var L = Math.max(1, lanes.length), today = new Date(); today.setHours(0, 0, 0, 0);
+    var tests = TESTS.map(function (t) {
+      var d = t.date ? new Date(t.date + "T00:00:00") : null;
+      return { name: t.name, d: d, idx: sx[t.through], through: t.through, days: d ? Math.round((d - today) / 864e5) : null };
+    }).filter(function (t) { return t.idx != null; });
+    var upcoming = tests.filter(function (t) { return t.days == null || t.days >= 0; })[0] || null;
+    var dueTo = upcoming ? upcoming.idx : -1, missing = [];
+
+    html += '<div class="flagrow" style="grid-row:1"></div>';
+    placed.forEach(function (p) {
+      var g = state(p.c), pct = g ? Math.round(100 * g.done / g.total) : 0, full = g && g.done >= g.total;
+      html += "<a class='bar" + (full ? " full" : "") + "' href='" + esc(p.c.href) + "' style='grid-row:" + (p.lane + 2) + ";grid-column:" + (p.a + 1) + " / " + (p.b + 2) + "'" +
+        " aria-label='" + esc(p.c.title + (g ? ", " + g.done + " of " + g.total + " solved" : "")).replace(/'/g, "&#39;") + "'>" +
+        "<i style='width:" + pct + "%'></i><b>" + esc(p.c.short) + "</b>" + (g && g.done ? "<small>" + g.done + "/" + g.total + "</small>" : "") + "</a>";
+    });
+    secs.forEach(function (s, i) {
+      if (!covered[i]) {
+        var due = i <= dueTo; if (due) missing.push(s.id);
+        html += '<div class="gap' + (due ? " due" : "") + '" style="grid-row:2;grid-column:' + (i + 1) + '" title="No practice set for section ' + esc(s.id) + ' yet"></div>';
+      }
+      html += '<div class="tick' + (!covered[i] && i <= dueTo ? " due" : "") + '" style="grid-row:' + (L + 2) + ";grid-column:" + (i + 1) + '" title="' + esc(s.title) + '">' + esc(s.id) + "</div>";
+    });
+    var chs = {}; secs.forEach(function (s, i) { var c = s.id.split(".")[0]; (chs[c] = chs[c] || []).push(i); });
+    Object.keys(chs).forEach(function (c) {
+      var ids = chs[c];
+      html += '<div class="chap" style="grid-row:' + (L + 3) + ";grid-column:" + (ids[0] + 1) + " / " + (ids[ids.length - 1] + 2) + '"><b>Chapter ' + esc(c) + "</b><span>" + esc(CHAPTERS[c] || "") + "</span></div>";
+    });
+    tests.forEach(function (t) {
+      var when = t.d ? ", " + t.d.toLocaleDateString("en-CA", { month: "short", day: "numeric" }) : "";
+      html += '<div class="flag' + (t.idx < n / 2 ? " left" : "") + '" style="grid-row:1 / ' + (L + 3) + ";grid-column:" + (t.idx + 1) + '"><span>' + esc(t.name + when) + "</span></div>";
+    });
+    map.innerHTML = html;
+
+    var note = "";
+    if (upcoming) {
+      var d = upcoming.days;
+      note = "<b>" + esc(upcoming.name) + "</b> covers everything up to §" + esc(upcoming.through) +
+        (d == null ? "" : d === 0 ? ' and is <span class="due">today</span>' : d === 1 ? ' and is <span class="due">tomorrow</span>' : ' and is in <span class="due">' + d + " days</span>") + ". " +
+        (missing.length ? 'No practice set yet for <span class="due">§' + missing.map(esc).join(", §") + "</span>." : "Every section on it has a practice set.");
+    }
+    $("mapnote").innerHTML = note; $("mapnote").hidden = !note;
+    $("secs").innerHTML = secs.map(function (s) { return "<li><b>" + esc(s.id) + "</b>" + esc(s.title) + "<span>" + (s.page ? "p. " + esc(s.page) : "") + "</span></li>"; }).join("");
+  }
+  draw();
+  window.addEventListener("pageshow", function (e) { if (e.persisted) draw(); });
+})();
+</script>
+</body>
+</html>

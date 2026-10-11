@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assignment 1</title>
+<!-- The home page builds this page's card from the block below. -->
+<script type="application/json" id="site-card">
+{"num": "A1", "title": "Assignment 1 practice", "text": "Probability versus inference questions, enumerative and analytic studies, proportions from a frequency table, histograms.", "meta": ["§1.1–1.2", "3 questions", "New numbers every time"]}
+</script>
+<link rel="stylesheet" href="site.css">
+<script src="site.js"></script>
+<style>
+/* Layout: sticky tally bar, then three stacked question sheets in one reading column; each sheet = stem, lettered parts, check row, worked solution. */
+/* Colours and fonts come from site.css */
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:820px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.top h1{font-family:var(--serif);font-size:18px;font-weight:600;margin:0;flex:1 1 220px;min-width:0;text-wrap:balance}
+.jump{display:flex;gap:6px}
+.jump a{font-family:var(--mono);font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:4px 9px}
+.jump a:hover{background:var(--accent-soft)}
+main{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:20px 56px;display:flex;flex-direction:column;gap:20px}
+.lede{color:var(--muted);margin:0;max-width:65ch}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;scroll-margin-top:70px}
+.q-head{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.q-head h2{font-family:var(--serif);font-size:19px;font-weight:600;margin:0}
+.ref{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.tag{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);flex:1 1 auto}
+.tally{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.q-body{padding:16px 18px;display:flex;flex-direction:column;gap:16px}
+.stem,.part p,.sol p{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0;max-width:68ch}
+.part{display:flex;flex-direction:column;gap:10px;min-width:0}
+.part.ok>p:first-child::after,.part.bad>p:first-child::after{font-family:var(--sans);font-size:13px;font-weight:600;margin-left:8px}
+.part.ok>p:first-child::after{content:"✓ correct";color:var(--good)}
+.part.bad>p:first-child::after{content:"✗ not yet";color:var(--bad)}
+.extra{border-top:1px dashed var(--line);padding-top:14px}
+.extra small{font-family:var(--sans);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+
+button{font:inherit;cursor:pointer;border-radius:7px;padding:7px 13px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+button.ghost{color:var(--accent)}
+:is(button,a,input,select,label.opt,label.card):focus-visible,label:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+
+.opts{display:flex;flex-direction:column;gap:6px}
+label.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-family:var(--serif);font-size:16px;line-height:1.45}
+label.opt input{margin-top:5px;flex:none;accent-color:var(--accent)}
+label.opt>span{min-width:0}
+label.opt:has(input:checked){background:var(--accent-soft);border-color:var(--accent)}
+.why{display:block;font-family:var(--sans);font-size:13.5px;margin-top:4px;color:var(--muted)}
+.why b{font-weight:600}
+.why.yes b{color:var(--good)} .why.no b{color:var(--bad)}
+
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-family:var(--serif);font-size:16px}
+.row .lab{flex:0 1 300px;min-width:0}
+.fld{display:inline-flex;align-items:center;gap:6px}
+.fld input,.fld select{font-family:var(--mono);font-size:15px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:7.5em;max-width:100%}
+.fld select{width:auto;font-family:var(--sans)}
+.fld.sm input{width:4.5em}
+.fld::after{font-weight:700;font-family:var(--sans);min-width:1em}
+.fld.ok input,.fld.ok select{border-color:var(--good);background:var(--good-soft)}
+.fld.bad input,.fld.bad select{border-color:var(--bad);background:var(--bad-soft)}
+.fld.ok::after{content:"✓";color:var(--good)} .fld.bad::after{content:"✗";color:var(--bad)}
+.sentence{font-family:var(--serif);font-size:16.5px;line-height:2.3;max-width:68ch}
+.radios{display:flex;flex-wrap:wrap;gap:8px}
+.radios label.opt{font-family:var(--sans);font-size:15px}
+.grp.ok label.opt:has(input:checked){border-color:var(--good);background:var(--good-soft)}
+.grp.bad label.opt:has(input:checked){border-color:var(--bad);background:var(--bad-soft)}
+
+.tblwrap{overflow-x:auto}
+table.freq{border-collapse:collapse;font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+table.freq th{font-family:var(--sans);font-weight:600;font-size:13px;text-align:left;color:var(--muted)}
+table.freq th,table.freq td{border:1px solid var(--line);padding:5px 12px;text-align:center}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:10px}
+label.card{display:block;border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer;min-width:0;position:relative}
+label.card input{position:absolute;top:10px;right:10px;accent-color:var(--accent)}
+label.card:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.grp.ok label.card:has(input:checked){border-color:var(--good);background:var(--good-soft)}
+.grp.bad label.card:has(input:checked){border-color:var(--bad);background:var(--bad-soft)}
+label.card.answer{outline:2px solid var(--good);outline-offset:1px}
+svg.h{display:block;width:100%;height:auto}
+svg.h text{font-family:var(--sans);font-size:10px;fill:var(--muted)}
+svg.h .bar{fill:var(--bar);stroke:var(--surface);stroke-width:1}
+svg.h .ax{stroke:var(--muted);stroke-width:1;fill:none}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--line);padding:12px 18px}
+.status{flex:1 1 220px;min-width:0;font-size:14px;color:var(--muted)}
+.status.ok{color:var(--good);font-weight:600} .status.bad{color:var(--bad)}
+.sol{border-top:1px solid var(--line);padding:16px 18px;display:flex;flex-direction:column;gap:10px;background:var(--bg);border-radius:0 0 10px 10px}
+.sol h3{font-family:var(--sans);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
+.sol .calc{font-family:var(--mono);font-size:14.5px;overflow-x:auto;white-space:nowrap;padding:2px 0}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px}
+.fr span:first-child{border-bottom:1px solid currentColor;padding:0 4px}
+.fr span:last-child{padding:0 4px}
+</style>
+<style id="site-zoom">@media (min-width:900px){html{zoom:0.8}}</style></head>
+<body>
+<header class="top"><div class="top-in">
+  <h1>Assignment 1 practice</h1>
+  <nav class="jump" aria-label="Questions"><a href="#q1">Q1</a><a href="#q2">Q2</a><a href="#q3">Q3</a></nav>
+  <button class="primary" id="newset" type="button">New set of all three</button>
+</div></header>
+
+<main>
+  <p class="lede">Sections 1.1 and 1.2 of Devore. Each question opens on the version from your WebAssign assignment. Press <b>New version</b> for a fresh scenario and fresh numbers as many times as you like. Check your answers, fix what is marked, or open the worked solution.</p>
+  <section class="q" id="q1"></section>
+  <section class="q" id="q2"></section>
+  <section class="q" id="q3"></section>
+</main>
+
+<script>
+(function(){
+"use strict";
+/* ---------- helpers ---------- */
+const R={
+  int:(a,b)=>a+Math.floor(Math.random()*(b-a+1)),
+  pick:a=>a[Math.floor(Math.random()*a.length)],
+  shuffle:a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a},
+  sample:(a,n)=>R.shuffle(a).slice(0,n)
+};
+const WORD=["zero","one","two","three","four","five","six"];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const list=a=>a.length<2?a.join(""):a.length===2?a.join(" and "):a.slice(0,-1).join(", ")+", and "+a[a.length-1];
+const frac=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const sum=a=>a.reduce((s,v)=>s+v,0);
+function num(str){
+  str=(str||"").trim().replace(/,/g,"");
+  if(!str) return NaN;
+  const m=str.match(/^(-?\d*\.?\d+)\s*\/\s*(\d*\.?\d+)$/);
+  if(m) return parseFloat(m[1])/parseFloat(m[2]);
+  return /^-?\d*\.?\d+$/.test(str)?parseFloat(str):NaN;
+}
+function mark(el,ok){ if(!el) return ok; el.classList.toggle("ok",ok); el.classList.toggle("bad",!ok); return ok; }
+const fld=(id,cls)=>`<span class="fld ${cls||""}"><input type="text" inputmode="decimal" autocomplete="off" id="${id}" aria-label="answer"></span>`;
+const byId=id=>document.getElementById(id);
+const propOK=(id,ans)=>mark(byId(id).parentElement, Math.abs(num(byId(id).value)-ans)<0.00006);
+const intOK=(id,ans)=>mark(byId(id).parentElement, num(byId(id).value)===ans);
+const radioVal=name=>{const e=document.querySelector(`input[name="${name}"]:checked`);return e?e.value:null};
+
+/* ---------- Question 1: probability vs inferential questions ---------- */
+const S1=[
+ {pop:"all computers of a certain brand and model",focus:"whether a computer needs service while under warranty",items:"computers",base:"need warranty service",ing:"needing warranty service",past:"needed warranty service"},
+ {pop:"all smartphones of a certain model",focus:"whether a phone needs a battery replacement within two years",items:"smartphones",base:"need a battery replacement",ing:"needing a battery replacement",past:"needed a battery replacement"},
+ {pop:"all LED bulbs from a certain production line",focus:"whether a bulb fails before 10,000 hours of use",items:"bulbs",base:"fail before 10,000 hours",ing:"failing before 10,000 hours",past:"failed before 10,000 hours"},
+ {pop:"all electric scooters of a certain make",focus:"whether a scooter requires a brake repair in its first year",items:"scooters",base:"require a brake repair",ing:"requiring a brake repair",past:"required a brake repair"},
+ {pop:"all dishwashers of a certain brand",focus:"whether a dishwasher leaks within its first three years",items:"dishwashers",base:"leak within three years",ing:"leaking within three years",past:"leaked within three years"},
+ {pop:"all circuit boards produced by a certain supplier",focus:"whether a board has at least one faulty solder joint",items:"circuit boards",base:"have a faulty solder joint",ing:"having a faulty solder joint",past:"had a faulty solder joint"}
+];
+const W={
+  prob:"Probability question. The make-up of the population is treated as known, and it asks how a sample is likely to turn out.",
+  popFact:"Not a probability question. It asks for a fixed fact about the whole population, and nothing about the chance of a sample result.",
+  infInA:"This is inference, not probability. It starts from sample data and reasons back to the population.",
+  inf:"Inferential question. It uses what was seen in the sample to draw a conclusion about the whole population.",
+  same:"Not what inference asks. A sample percentage almost never equals the population percentage exactly; inference asks how close they are likely to be and how sure we can be.",
+  sampleKnown:"Not inferential. The sample proportion is already known exactly from the data, so there is nothing to infer. A proportion also cannot be a number like these.",
+  reversed:"Backwards. In inference the sample gives evidence about the population, not the population about the sample.",
+  probInB:"This is a probability question. It reasons from an assumed population to a sample, and uses no observed data."
+};
+function q1Options(s,n,p,orig){
+  const x=Math.round(n*(p+5)/100), ph=x/n, a=(ph-0.07).toFixed(2), b=(ph+0.07).toFixed(2);
+  const A=Math.round((ph-0.07)*100), B=Math.round((ph+0.07)*100), k=R.pick([5,10,15,20]), m=Math.round(n*p/100), j=R.int(5,20);
+  if(orig) return {
+    a:[
+     {t:"How likely is it that more than half of the sampled computers will need or have needed warranty service?",ok:true,why:W.prob},
+     {t:"What is the number of computers that will need warranty service in the population?",ok:false,why:W.popFact},
+     {t:"What is the expected number among the 600 that need warranty service?",ok:true,why:W.prob},
+     {t:"How many more than half the population of computers will need warranty service?",ok:false,why:W.popFact},
+     {t:"How likely is it that the number needing warranty service will exceed the expected number by more than 10?",ok:true,why:W.prob}],
+    b:[
+     {t:"Can we conclude that the population will have the same percentage of warranty service as the sample needed?",ok:false,why:W.same},
+     {t:"Does the sample provide compelling evidence for concluding that more than 10% of all such computers need warranty service?",ok:true,why:W.inf},
+     {t:"Suppose that 90 of the 600 sampled needed warranty service. How confident can we be that the proportion of sampled computers needing warranty service is between 8 and 22?",ok:false,why:W.sampleKnown},
+     {t:"Suppose that 90 of the 600 sampled needed warranty service. How confident can we be that the proportion of all such computers needing warranty service is between 0.08 and 0.22?",ok:true,why:W.inf},
+     {t:"Does the population provide compelling evidence for concluding that more than 10% of the sample computers need warranty service?",ok:false,why:W.reversed}]};
+  const aYes=[
+    `How likely is it that more than half of the sampled ${s.items} will ${s.base}?`,
+    `What is the expected number among the ${n} that ${s.base}?`,
+    `How likely is it that the number ${s.ing} will exceed the expected number by more than ${k}?`,
+    `What is the chance that fewer than ${m} of the ${n} sampled ${s.items} will ${s.base}?`,
+    `How likely is it that none of the first ${j} ${s.items} sampled will ${s.base}?`
+  ].map(t=>({t,ok:true,why:W.prob}));
+  const aNo=[
+    {t:`What is the number of ${s.items} that will ${s.base} in the population?`,why:W.popFact},
+    {t:`How many more than half the population of ${s.items} will ${s.base}?`,why:W.popFact},
+    {t:`Does the sample provide compelling evidence that more than ${p}% of all such ${s.items} ${s.base}?`,why:W.infInA},
+    {t:`Suppose that ${x} of the ${n} sampled ${s.past}. What is a good estimate of the proportion of all such ${s.items} that ${s.base}?`,why:W.infInA}
+  ].map(o=>({...o,ok:false}));
+  const bYes=[
+    `Does the sample provide compelling evidence for concluding that more than ${p}% of all such ${s.items} ${s.base}?`,
+    `Suppose that ${x} of the ${n} sampled ${s.past}. How confident can we be that the proportion of all such ${s.items} ${s.ing} is between ${a} and ${b}?`,
+    `Suppose that ${x} of the ${n} sampled ${s.past}. What is a reasonable estimate of the proportion of all such ${s.items} that ${s.base}?`,
+    `Based on the sample, is it plausible that fewer than ${p}% of all such ${s.items} ${s.base}?`
+  ].map(t=>({t,ok:true,why:W.inf}));
+  const bNo=[
+    {t:`Can we conclude that the population will have the same percentage ${s.ing} as the sample did?`,why:W.same},
+    {t:`Suppose that ${x} of the ${n} sampled ${s.past}. How confident can we be that the proportion of sampled ${s.items} ${s.ing} is between ${A} and ${B}?`,why:W.sampleKnown},
+    {t:`Does the population provide compelling evidence for concluding that more than ${p}% of the sample ${s.items} ${s.base}?`,why:W.reversed},
+    {t:`How likely is it that more than half of the sampled ${s.items} will ${s.base}?`,why:W.probInB},
+    {t:`What is the expected number among the ${n} that ${s.base}?`,why:W.probInB}
+  ].map(o=>({...o,ok:false}));
+  const na=R.int(2,3), nb=R.int(1,3);
+  return {a:R.shuffle(R.sample(aYes,na).concat(R.sample(aNo,5-na))), b:R.shuffle(R.sample(bYes,nb).concat(R.sample(bNo,5-nb)))};
+}
+const Q1={
+  id:"q1",title:"Question 1",ref:"Devore §1.1, Exercise 3, p. 12",parts:2,
+  gen(orig){
+    const s=orig?S1[0]:R.pick(S1), n=orig?600:R.pick([200,300,400,500,600,800,1000]), p=orig?10:R.pick([5,10,15,20,25]);
+    return {s,n,p,o:q1Options(s,n,p,orig)};
+  },
+  render(d){
+    const opts=(key)=>`<div class="opts">`+d.o[key].map((o,i)=>`<label class="opt"><input type="checkbox" id="q1${key}-${i}"><span>${o.t}<span class="why ${o.ok?"yes":"no"}" hidden><b>${o.ok?"Select.":"Do not select."}</b> ${o.why}</span></span></label>`).join("")+`</div>`;
+    return `<p class="stem">Consider the population consisting of ${d.s.pop}, and focus on ${d.s.focus}.</p>
+    <div class="part" id="q1-pa"><p><b>(a)</b> Pose several probability questions based on selecting a sample of ${d.n} such ${d.s.items}. (Select all that apply.)</p>${opts("a")}</div>
+    <div class="part" id="q1-pb"><p><b>(b)</b> What inferential statistics question might be answered by determining the number of such ${d.s.items} in a sample of size ${d.n} that ${d.s.base}? (Select all that apply.)</p>${opts("b")}</div>`;
+  },
+  check(d){
+    let right=0;
+    for(const key of ["a","b"]){
+      const ok=d.o[key].every((o,i)=>byId(`q1${key}-${i}`).checked===o.ok);
+      mark(byId("q1-p"+key),ok); if(ok) right++;
+    }
+    return right;
+  },
+  solution(d){
+    document.querySelectorAll("#q1 .why").forEach(e=>e.hidden=false);
+    return `<h3>How to tell them apart</h3>
+    <p><b>Probability</b> reasons from the population to the sample: assume you know the population, then ask what a sample of ${d.n} is likely to show.</p>
+    <p><b>Inferential statistics</b> reasons from the sample to the population: you have the sample result, and you ask what it says about all such ${d.s.items}.</p>
+    <p>The reason for each statement is now shown under it above.</p>`;
+  }
+};
+
+/* ---------- Question 2: factorial experiment, enumerative vs analytic ---------- */
+const S2=[
+ {intro:"The amount of flow through a solenoid valve in an automobile's pollution-control system is an important characteristic.",dep:"flow rate",resp:"flow",goal:"improve the flow rate through the solenoid valve",factors:["armature length","spring load","bobbin depth"]},
+ {intro:"The compressive strength of concrete cylinders is an important characteristic in construction.",dep:"strength",resp:"strength",goal:"improve the strength of concrete poured in the future",factors:["cement type","curing time","water–cement ratio","aggregate size"]},
+ {intro:"The tensile strength of 3D-printed brackets is an important characteristic for a robotics team.",dep:"tensile strength",resp:"tensile strength",goal:"improve the strength of brackets printed in the future",factors:["nozzle temperature","layer height","print speed","infill density"]},
+ {intro:"The surface roughness of machined aluminum parts is an important quality characteristic.",dep:"roughness",resp:"roughness",goal:"reduce the roughness of parts machined in the future",factors:["cutting speed","feed rate","depth of cut","tool material"]},
+ {intro:"The yield of a chemical reaction in a pilot plant is an important characteristic.",dep:"yield",resp:"yield",goal:"increase the yield of future production runs",factors:["temperature","pressure","catalyst concentration","stirring rate"]},
+ {intro:"The lifetime of a rechargeable battery cell is an important characteristic.",dep:"lifetime",resp:"lifetime",goal:"extend the lifetime of cells built in the future",factors:["charging current","storage temperature","discharge depth","electrolyte additive"]}
+];
+const X2=[
+ {t:"A registrar selects 150 students from the list of all students currently enrolled at a college to estimate the average number of credits being taken this semester.",a:"enumerative",why:"The population is a fixed, listed group (current enrolment), and the list is the sampling frame."},
+ {t:"An auditor selects 80 invoices from the 4,200 invoices a company filed last year to estimate the proportion that contain errors.",a:"enumerative",why:"Last year's 4,200 invoices are a finite, unchanging collection that can be listed."},
+ {t:"A city samples 300 households from its property-tax roll to estimate the proportion that currently own an electric vehicle.",a:"enumerative",why:"The tax roll is a sampling frame for a well-defined existing population."},
+ {t:"A warehouse manager inspects 50 of the 2,000 hard drives in a shipment that has already arrived to decide whether to accept that shipment.",a:"enumerative",why:"The conclusion is about one existing, countable shipment."},
+ {t:"A librarian pulls 200 books from the catalogue of the current collection to estimate the fraction with damaged bindings.",a:"enumerative",why:"The catalogue lists every book in a fixed, existing collection."},
+ {t:"An engineer measures the breaking strength of 30 prototype cables made with a new alloy to decide whether future production should switch to that alloy.",a:"analytic",why:"The conclusion is about cables that do not exist yet, so no sampling frame can list them."},
+ {t:"A bakery tries three oven temperatures over two weeks to choose a setting that will reduce the number of burnt loaves from now on.",a:"analytic",why:"The aim is to adjust a process and improve future output."},
+ {t:"A drug trial gives a new medication to 400 volunteers to predict how well it will work for future patients.",a:"analytic",why:"The target is future patients, a population that cannot be listed."},
+ {t:"A plant samples bottles from its filling line every hour to decide whether the filling process needs adjusting.",a:"analytic",why:"It studies an ongoing process in order to act on it."},
+ {t:"A researcher tests 25 batteries built with an experimental electrode to predict the lifetime of batteries that would be manufactured later.",a:"analytic",why:"The batteries of interest have not been made yet."}
+];
+const Q2={
+  id:"q2",title:"Question 2",ref:"Devore §1.1, Exercise 8, p. 12",parts:5,
+  gen(orig){
+    if(orig) return {s:S2[0],f:S2[0].factors,lv:[3,3,3],r:1,x:X2[0]};
+    const s=R.pick(S2), k=Math.min(R.int(2,4),s.factors.length), f=R.sample(s.factors,k);
+    const lv=Math.random()<0.5?Array(k).fill(R.int(2,4)):f.map(()=>R.int(2,4));
+    return {s,f,lv,r:R.pick([1,1,2,3]),x:R.pick(X2)};
+  },
+  render(d){
+    const same=d.lv.every(v=>v===d.lv[0]), L=d.lv[0];
+    const names={2:" (low and high)",3:" (low, medium, and high)",4:""};
+    const levels=same?`${cap(WORD[L])} different levels${names[L]} of each factor were chosen`
+      :cap(list(d.lv.map((v,i)=>`${WORD[v]} levels of ${d.f[i]}`)))+" were chosen";
+    const obs=d.r===1?`a single observation on ${d.s.resp} was made`:`${WORD[d.r]} observations on ${d.s.resp} were made`;
+    const radio=(name,vals)=>`<div class="radios grp" id="${name}-g">`+vals.map(([v,l])=>`<label class="opt"><input type="radio" name="${name}" value="${v}" id="${name}-${v}"><span>${l}</span></label>`).join("")+`</div>`;
+    return `<p class="stem">${d.s.intro} An experiment was carried out to study how ${d.s.dep} depended on ${WORD[d.f.length]} factors: ${list(d.f)}. ${levels}, and ${obs} for each combination of levels.</p>
+    <div class="part"><p><b>(a)</b> The resulting data set consisted of how many observations?</p>
+      <div class="row"><span class="lab">Number of factor-level combinations</span>${fld("q2-combos")}</div>
+      <div class="row"><span class="lab">Number of observations in the data set</span>${fld("q2-obs")}</div></div>
+    <div class="part"><p><b>(b)</b> Is this an enumerative or analytic study?</p>
+      ${radio("q2type",[["enumerative","Enumerative"],["analytic","Analytic"]])}
+      <p>A study of this type</p>
+      ${radio("q2frame",[["has","has a sampling frame"],["none","does not have a sampling frame"]])}</div>
+    <div class="part extra"><p><small>Extra practice, not in the WebAssign version</small><br><b>(c)</b> Classify this second study. ${d.x.t}</p>
+      ${radio("q2x",[["enumerative","Enumerative"],["analytic","Analytic"]])}</div>`;
+  },
+  check(d){
+    const combos=d.lv.reduce((p,v)=>p*v,1);
+    let r=0;
+    if(intOK("q2-combos",combos)) r++;
+    if(intOK("q2-obs",combos*d.r)) r++;
+    if(mark(byId("q2type-g"),radioVal("q2type")==="analytic")) r++;
+    if(mark(byId("q2frame-g"),radioVal("q2frame")==="none")) r++;
+    if(mark(byId("q2x-g"),radioVal("q2x")===d.x.a)) r++;
+    return r;
+  },
+  solution(d){
+    const combos=d.lv.reduce((p,v)=>p*v,1);
+    return `<h3>Worked solution</h3>
+    <p><b>(a)</b> Every level of one factor is paired with every level of the others, so multiply the numbers of levels (${d.f.map((f,i)=>`${f}: ${d.lv[i]}`).join(", ")}).</p>
+    <div class="calc">combinations = ${d.lv.join(" × ")} = ${combos}</div>
+    ${d.r>1?`<p>Each combination was observed ${d.r} times.</p><div class="calc">observations = ${combos} × ${d.r} = ${combos*d.r}</div>`:`<p>There is one observation per combination, so the data set has <b>${combos}</b> observations.</p>`}
+    <p><b>(b)</b> An enumerative study looks at a fixed, existing collection of individuals that can be listed in a sampling frame. This experiment instead studies a process in order to ${d.s.goal}. That makes it an <b>analytic</b> study, and an analytic study <b>does not have</b> a sampling frame.</p>
+    <p><b>(c)</b> <b>${cap(d.x.a)}.</b> ${d.x.why}</p>`;
+  }
+};
+
+/* ---------- Question 3: frequency table, proportions, histogram ---------- */
+const S3=[
+ {intro:"The accompanying data came from a study of collusion in bidding within the construction industry.",xh:"No. Bidders",fh:"No. Contracts",unit:"bidders",things:"contracts",rel:"involved",axis:"Number of bidders",start:2},
+ {intro:"The accompanying data came from an inspection of printed circuit boards, where the number of defects on each board was recorded.",xh:"No. Defects",fh:"No. Boards",unit:"defects",things:"boards",rel:"had",axis:"Number of defects",start:0},
+ {intro:"The accompanying data came from a bookstore survey of how many textbooks each student in a program bought this term.",xh:"No. Textbooks",fh:"No. Students",unit:"textbooks",things:"students",rel:"bought",axis:"Number of textbooks",start:0},
+ {intro:"The accompanying data give the total number of goals scored in each game of a hockey league's season.",xh:"No. Goals",fh:"No. Games",unit:"goals",things:"games",rel:"had",axis:"Number of goals",start:0},
+ {intro:"The accompanying data came from a traffic study that counted the occupants of each vehicle passing a toll booth.",xh:"No. Occupants",fh:"No. Vehicles",unit:"occupants",things:"vehicles",rel:"carried",axis:"Number of occupants",start:1},
+ {intro:"The accompanying data came from a call centre that recorded how many calls arrived in each one-minute interval.",xh:"No. Calls",fh:"No. Intervals",unit:"calls",things:"intervals",rel:"had",axis:"Number of calls",start:0}
+];
+const same=(a,b)=>a.length===b.length&&a.every((v,i)=>v===b[i]);
+function q3Choices(fs){
+  const rot=n=>fs.slice(-n).concat(fs.slice(0,-n)), half=Math.floor(fs.length/2);
+  const cands=R.shuffle([fs.slice().reverse(),rot(2),rot(3),fs.slice().sort((a,b)=>b-a),fs.slice().sort((a,b)=>a-b),fs.slice(half).concat(fs.slice(0,half))]);
+  const out=[];
+  for(const c of cands){ if(!same(c,fs)&&!out.some(o=>same(o,c))) out.push(c); if(out.length===3) break; }
+  return R.shuffle(out.map(f=>({f,ok:false})).concat([{f:fs,ok:true}]));
+}
+function hist(xs,fs,ymax,step,axis){
+  const Wd=280,H=200,L=38,B=38,T=10,pw=Wd-L-8,ph=H-T-B,bw=pw/(xs.length+1),y=v=>T+ph-ph*v/ymax;
+  let s=`<svg class="h" viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Histogram option">`;
+  for(let v=0;v<=ymax;v+=step) s+=`<line class="ax" x1="${L-4}" x2="${L}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-7}" y="${y(v)+3.5}" text-anchor="end">${v}</text>`;
+  fs.forEach((f,i)=>{const x=L+bw*0.5+i*bw; s+=`<rect class="bar" x="${x.toFixed(1)}" y="${y(f).toFixed(1)}" width="${bw.toFixed(1)}" height="${(ph*f/ymax).toFixed(1)}"/><text x="${(x+bw/2).toFixed(1)}" y="${T+ph+13}" text-anchor="middle">${xs[i]}</text>`;});
+  s+=`<path class="ax" d="M${L} ${T}V${T+ph}H${Wd-8}"/><text x="${L+pw/2}" y="${H-6}" text-anchor="middle">${axis}</text><text transform="translate(10 ${T+ph/2}) rotate(-90)" text-anchor="middle">Frequency</text></svg>`;
+  return s;
+}
+const Q3={
+  id:"q3",title:"Question 3",ref:"Devore §1.2, Exercise 17, p. 26",parts:9,
+  gen(orig){
+    let s,xs,fs,k,a,b,skew;
+    if(orig){ s=S3[0]; xs=[2,3,4,5,6,7,8,9,10,11]; fs=[8,20,24,17,13,8,5,7,2,1]; k=5;a=5;b=10; skew="pos"; }
+    else{
+      s=R.pick(S3); const m=R.int(8,10), pk=R.int(1,2), peak=R.int(18,40), tau=1.8+Math.random()*1.4;
+      xs=Array.from({length:m},(_,i)=>s.start+i);
+      fs=xs.map((_,i)=>{const w=i<pk?Math.exp(-((i-pk)**2)/2.2):Math.exp(-(i-pk)/tau); return Math.max(1,Math.round(w*peak*(0.82+Math.random()*0.36)));});
+      const others=Math.max(...fs.filter((_,i)=>i!==pk)); if(fs[pk]<=others) fs[pk]=others+R.int(2,5);
+      skew=Math.random()<0.6?"pos":"neg"; if(skew==="neg") fs.reverse();
+      k=xs[R.int(2,m-3)]; const ai=R.int(2,m-4); a=xs[ai]; b=xs[Math.random()<0.6?m-2:R.int(ai+2,m-1)];
+    }
+    return {s,xs,fs,k,a,b,skew,ch:q3Choices(fs)};
+  },
+  ans(d){
+    const N=sum(d.fs), part=t=>d.fs.filter((_,i)=>t(d.xs[i]));
+    const P={most:part(x=>x<=d.k),least:part(x=>x>=d.k),incl:part(x=>x>=d.a&&x<=d.b),strict:part(x=>x>d.a&&x<d.b)};
+    return {N,P,mode:d.xs[d.fs.indexOf(Math.max(...d.fs))],lo:d.xs[0],hi:d.xs[d.xs.length-1]};
+  },
+  render(d){
+    const s=d.s, mx=Math.max(...d.fs), step=mx>40?10:5, ymax=Math.ceil((mx+1)/step)*step;
+    return `<p class="stem">${s.intro}</p>
+    <div class="tblwrap"><table class="freq"><tr><th>${s.xh}</th>${d.xs.map(x=>`<td>${x}</td>`).join("")}</tr><tr><th>${s.fh}</th>${d.fs.map(f=>`<td>${f}</td>`).join("")}</tr></table></div>
+    <div class="part"><p><b>(a)</b> What proportion of the ${s.things} ${s.rel} at most ${d.k} ${s.unit}? At least ${d.k} ${s.unit}? (Round your answers to four decimal places.)</p>
+      <div class="row"><span class="lab">at most ${d.k} ${s.unit}</span>${fld("q3-most")}</div>
+      <div class="row"><span class="lab">at least ${d.k} ${s.unit}</span>${fld("q3-least")}</div></div>
+    <div class="part"><p><b>(b)</b> What proportion of the ${s.things} ${s.rel} between ${d.a} and ${d.b} ${s.unit}, inclusive? Strictly between ${d.a} and ${d.b} ${s.unit}? (Round your answers to four decimal places.)</p>
+      <div class="row"><span class="lab">between ${d.a} and ${d.b}, inclusive</span>${fld("q3-incl")}</div>
+      <div class="row"><span class="lab">strictly between ${d.a} and ${d.b}</span>${fld("q3-strict")}</div></div>
+    <div class="part"><p><b>(c)</b> Construct a histogram/bar chart. Choose the one that matches the table.</p>
+      <div class="hgrid grp" id="q3h-g">${d.ch.map((c,i)=>`<label class="card" id="q3h-c${i}"><input type="radio" name="q3h" value="${i}" id="q3h-${i}" aria-label="Histogram ${i+1}">${hist(d.xs,c.f,ymax,step,s.axis)}</label>`).join("")}</div>
+      <p>Comment on interesting features.</p>
+      <div class="sentence">The distribution of ${s.axis.toLowerCase()} is
+        <span class="fld"><select id="q3-skew" aria-label="shape"><option value="">choose…</option><option value="pos">positively skewed</option><option value="neg">negatively skewed</option><option value="sym">roughly symmetric</option></select></span>,
+        ranging from a low of ${fld("q3-lo","sm")} to a high of ${fld("q3-hi","sm")} ${s.unit}. The most frequent value is ${fld("q3-mode","sm")} ${s.unit}.</div></div>`;
+  },
+  check(d){
+    const A=Q3.ans(d); let r=0;
+    for(const key of ["most","least","incl","strict"]) if(propOK("q3-"+key,sum(A.P[key])/A.N)) r++;
+    const pick=radioVal("q3h"); if(mark(byId("q3h-g"),pick!==null&&d.ch[+pick].ok)) r++;
+    if(mark(byId("q3-skew").parentElement,byId("q3-skew").value===d.skew)) r++;
+    if(intOK("q3-lo",A.lo)) r++; if(intOK("q3-hi",A.hi)) r++; if(intOK("q3-mode",A.mode)) r++;
+    return r;
+  },
+  solution(d){
+    const A=Q3.ans(d), s=d.s;
+    const line=(label,arr)=>`<div class="calc">${label}: ${arr.length>1?frac(arr.join(" + "),A.N)+" = ":""}${frac(sum(arr),A.N)} = ${(sum(arr)/A.N).toFixed(4)}</div>`;
+    byId("q3h-c"+d.ch.findIndex(c=>c.ok)).classList.add("answer");
+    return `<h3>Worked solution</h3>
+    <p>First add up every frequency to get the total number of ${s.things}.</p>
+    <div class="calc">n = ${d.fs.join(" + ")} = ${A.N}</div>
+    <p><b>(a)</b> "At most ${d.k}" means ${d.k} or fewer. "At least ${d.k}" means ${d.k} or more. Both include ${d.k} itself.</p>
+    ${line("at most "+d.k,A.P.most)}${line("at least "+d.k,A.P.least)}
+    <p><b>(b)</b> "Inclusive" keeps the endpoints ${d.a} and ${d.b}. "Strictly between" drops both of them.</p>
+    ${line(`${d.a} to ${d.b} inclusive`,A.P.incl)}${line(`strictly between`,A.P.strict)}
+    <p><b>(c)</b> The correct histogram is outlined above. Each bar's height must equal the frequency in the table for that value; the tallest bar sits at ${A.mode} with height ${Math.max(...d.fs)}.</p>
+    <p>The values run from ${A.lo} to ${A.hi}, with the most frequent value at ${A.mode}. The long tail stretches toward the ${d.skew==="pos"?"larger":"smaller"} values, so the distribution is <b>${d.skew==="pos"?"positively":"negatively"} skewed</b>.</p>`;
+  }
+};
+
+/* ---------- shell ---------- */
+let stats={};
+try{ stats=JSON.parse(localStorage.getItem("m2260a1")||"{}")||{}; }catch(e){ stats={}; }
+const report=()=>{ if(window.Site) Site.report({done:ALL.filter(Q=>stats[Q.id]&&stats[Q.id].done).length,total:ALL.length}); };
+const save=()=>{ try{ localStorage.setItem("m2260a1",JSON.stringify(stats)); }catch(e){} report(); };
+const state={};
+function mount(Q,orig){
+  const st=state[Q.id]||{ver:0}; state[Q.id]=st;
+  st.orig=orig; if(!orig) st.ver++; st.d=Q.gen(orig); st.graded=false;
+  const t=stats[Q.id]||{tried:0,perfect:0};
+  const root=byId(Q.id);
+  root.innerHTML=`<div class="q-head"><h2>${Q.title}</h2><span class="ref">${Q.ref}</span>
+      <span class="tag">${orig?"Original WebAssign version":"Practice version "+st.ver}</span>
+      <span class="tally" id="${Q.id}-tally">First-try perfect: ${t.perfect} of ${t.tried}</span></div>
+    <div class="q-body">${Q.render(st.d)}</div>
+    <div class="actions"><button class="primary" type="button" data-act="check">Check answers</button>
+      <button class="ghost" type="button" data-act="solve">Show worked solution</button>
+      <button type="button" data-act="new">New version</button>
+      ${orig?"":`<button type="button" data-act="orig">Original</button>`}
+      <span class="status" id="${Q.id}-status" role="status"></span></div>
+    <div class="sol" id="${Q.id}-sol" hidden></div>`;
+  root.onclick=e=>{
+    const act=e.target.dataset&&e.target.dataset.act; if(!act) return;
+    if(act==="new") return mount(Q,false);
+    if(act==="orig") return mount(Q,true);
+    if(act==="solve"){ const sol=byId(Q.id+"-sol"); sol.innerHTML=Q.solution(st.d); sol.hidden=false; st.graded=true; e.target.hidden=true; return; }
+    const right=Q.check(st.d), all=right===Q.parts, status=byId(Q.id+"-status");
+    status.className="status "+(all?"ok":"bad");
+    status.textContent=all?`All ${Q.parts} parts correct.`:`${right} of ${Q.parts} parts correct. Fix the ones marked ✗ and check again.`;
+    if(all){ const s=stats[Q.id]||(stats[Q.id]={tried:0,perfect:0}); if(!s.done){ s.done=1; save(); } }
+    if(!st.graded){ st.graded=true; const s=stats[Q.id]||(stats[Q.id]={tried:0,perfect:0}); s.tried++; if(all) s.perfect++; save();
+      byId(Q.id+"-tally").textContent=`First-try perfect: ${s.perfect} of ${s.tried}`; }
+  };
+}
+const ALL=[Q1,Q2,Q3];
+ALL.forEach(Q=>mount(Q,true));
+report();
+byId("newset").onclick=()=>{ ALL.forEach(Q=>mount(Q,false)); window.scrollTo({top:0,behavior:"auto"}); };
+window.__practice={ALL,state};
+})();
+</script>
+
+</body>
+</html>
