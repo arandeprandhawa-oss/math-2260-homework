@@ -40,6 +40,10 @@
         {
             "label": "Proof practice",
             "file": "pages/proof-practice.html"
+        },
+        {
+            "label": "Textbook Practice",
+            "file": "pages/textbook-practice.html"
         }
     ]
 }
